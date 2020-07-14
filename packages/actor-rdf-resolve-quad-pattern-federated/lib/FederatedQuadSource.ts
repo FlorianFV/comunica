@@ -17,11 +17,11 @@ import {Quad} from "rdf-js";
  * It will call the given mediator to evaluate each quad pattern query separately.
  */
 export class FederatedQuadSource implements ILazyQuadSource {
-
   private static readonly SKOLEM_PREFIX = 'urn:comunica_skolem:source_';
 
   protected readonly mediatorResolveQuadPattern: Mediator<Actor<IActionRdfResolveQuadPattern, IActorTest,
-    IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>;
+  IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>;
+
   protected readonly sources: DataSources;
   protected readonly contextDefault: ActionContext;
   protected readonly emptyPatterns: Map<IDataSource, RDF.BaseQuad[]>;
@@ -30,9 +30,9 @@ export class FederatedQuadSource implements ILazyQuadSource {
   protected readonly algebraFactory: Factory;
 
   constructor(mediatorResolveQuadPattern: Mediator<Actor<IActionRdfResolveQuadPattern, IActorTest,
-    IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>,
-              context: ActionContext, emptyPatterns: Map<IDataSource, RDF.Quad[]>,
-              skipEmptyPatterns: boolean) {
+  IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>,
+  context: ActionContext, emptyPatterns: Map<IDataSource, RDF.Quad[]>,
+  skipEmptyPatterns: boolean) {
     this.mediatorResolveQuadPattern = mediatorResolveQuadPattern;
     this.sources = context.get(KEY_CONTEXT_SOURCES);
     this.contextDefault = context.delete(KEY_CONTEXT_SOURCES);
@@ -69,10 +69,10 @@ export class FederatedQuadSource implements ILazyQuadSource {
    * @return {boolean} If child is a sub-pattern of parent
    */
   public static isSubPatternOf(child: RDF.BaseQuad, parent: RDF.BaseQuad): boolean {
-    return (!FederatedQuadSource.isTermBound(parent.subject) || parent.subject.equals(child.subject))
-      && (!FederatedQuadSource.isTermBound(parent.predicate) || parent.predicate.equals(child.predicate))
-      && (!FederatedQuadSource.isTermBound(parent.object) || parent.object.equals(child.object))
-      && (!FederatedQuadSource.isTermBound(parent.graph) || parent.graph.equals(child.graph));
+    return (!FederatedQuadSource.isTermBound(parent.subject) || parent.subject.equals(child.subject)) &&
+      (!FederatedQuadSource.isTermBound(parent.predicate) || parent.predicate.equals(child.predicate)) &&
+      (!FederatedQuadSource.isTermBound(parent.object) || parent.object.equals(child.object)) &&
+      (!FederatedQuadSource.isTermBound(parent.graph) || parent.graph.equals(child.graph));
   }
 
   /**
@@ -97,7 +97,7 @@ export class FederatedQuadSource implements ILazyQuadSource {
    * @return The skolemized quad.
    */
   public static skolemizeQuad<Q extends BaseQuad = Quad>(quad: Q, sourceId: string): Q {
-    return mapTerms(quad, (term) => FederatedQuadSource.skolemizeTerm(term, sourceId));
+    return mapTerms(quad, term => FederatedQuadSource.skolemizeTerm(term, sourceId));
   }
 
   /**
@@ -121,10 +121,9 @@ export class FederatedQuadSource implements ILazyQuadSource {
           // It came from the correct source
           const termLabel = term.value.substr(colonSeparator + 1, term.value.length);
           return DataFactory.blankNode(termLabel);
-        } else {
-          // It came from a different source
-          return null;
         }
+        // It came from a different source
+        return null;
       }
     }
     return term;
@@ -172,24 +171,24 @@ export class FederatedQuadSource implements ILazyQuadSource {
   }
 
   public matchLazy(subject?: RegExp | RDF.Term,
-                   predicate?: RegExp | RDF.Term,
-                   object?: RegExp | RDF.Term,
-                   graph?: RegExp | RDF.Term): AsyncIterator<RDF.Quad> & RDF.Stream {
-    if (subject instanceof RegExp
-      || predicate instanceof RegExp
-      || object instanceof RegExp
-      || graph instanceof RegExp) {
-      throw new Error("FederatedQuadSource does not support matching by regular expressions.");
+    predicate?: RegExp | RDF.Term,
+    object?: RegExp | RDF.Term,
+    graph?: RegExp | RDF.Term): AsyncIterator<RDF.Quad> & RDF.Stream {
+    if (subject instanceof RegExp ||
+      predicate instanceof RegExp ||
+      object instanceof RegExp ||
+      graph instanceof RegExp) {
+      throw new Error('FederatedQuadSource does not support matching by regular expressions.');
     }
 
     // Counters for our metadata
     const metadata: {[id: string]: any} = { totalItems: 0 };
-    let remainingSources: number = 1;
-    let sourcesCount: number = 0;
+    let remainingSources = 1;
+    let sourcesCount = 0;
 
     // Anonymous function to handle totalItems from metadata
     const checkEmitMetadata = (currentTotalItems: number, source: IDataSource,
-                               pattern: RDF.BaseQuad | undefined, lastMetadata?: {[id: string]: any}) => {
+      pattern: RDF.BaseQuad | undefined, lastMetadata?: {[id: string]: any}) => {
       if (this.skipEmptyPatterns && !currentTotalItems) {
         // Because another call may have added more information in the meantime
         if (pattern && !this.isSourceEmpty(source, pattern)) {
@@ -218,10 +217,10 @@ export class FederatedQuadSource implements ILazyQuadSource {
         // Convert falsy terms to variables, reverse operation of {@link ActorRdfResolveQuadPatternSource#variableToUndefined}.
         // Deskolemize terms, so we send the original blank nodes to each source.
         // Note that some sources may not match bnodes by label. SPARQL endpoints for example consider them variables.
-        const s = !subject   ? DataFactory.variable('vs') : FederatedQuadSource.deskolemizeTerm(subject,   sourceId);
+        const s = !subject ? DataFactory.variable('vs') : FederatedQuadSource.deskolemizeTerm(subject, sourceId);
         const p = !predicate ? DataFactory.variable('vp') : FederatedQuadSource.deskolemizeTerm(predicate, sourceId);
-        const o = !object    ? DataFactory.variable('vo') : FederatedQuadSource.deskolemizeTerm(object,    sourceId);
-        const g = !graph     ? DataFactory.variable('vg') : FederatedQuadSource.deskolemizeTerm(graph,     sourceId);
+        const o = !object ? DataFactory.variable('vo') : FederatedQuadSource.deskolemizeTerm(object, sourceId);
+        const g = !graph ? DataFactory.variable('vg') : FederatedQuadSource.deskolemizeTerm(graph, sourceId);
         let pattern: Algebra.Pattern | undefined;
 
         // Prepare the context for this specific source
@@ -232,8 +231,8 @@ export class FederatedQuadSource implements ILazyQuadSource {
         // If any of the deskolemized blank nodes originate from another source,
         // or if we can predict that the given source will have no bindings for the given pattern,
         // return an empty iterator.
-        if (!s || !p || !o || !g
-          || this.isSourceEmpty(source, pattern = this.algebraFactory.createPattern(s, p, o, g))) {
+        if (!s || !p || !o || !g ||
+          this.isSourceEmpty(source, pattern = this.algebraFactory.createPattern(s, p, o, g))) {
           output = { data: new EmptyIterator(), metadata: () => Promise.resolve({ totalItems: 0 }) };
         } else {
           output = await this.mediatorResolveQuadPattern.mediate({ pattern, context });
@@ -277,9 +276,9 @@ export class FederatedQuadSource implements ILazyQuadSource {
   }
 
   public match(subject?: RegExp | RDF.Term,
-               predicate?: RegExp | RDF.Term,
-               object?: RegExp | RDF.Term,
-               graph?: RegExp | RDF.Term): RDF.Stream {
+    predicate?: RegExp | RDF.Term,
+    object?: RegExp | RDF.Term,
+    graph?: RegExp | RDF.Term): RDF.Stream {
     return this.matchLazy(subject, predicate, object, graph);
   }
 }

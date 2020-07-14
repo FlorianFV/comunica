@@ -1,4 +1,4 @@
-import {Actor, IAction, IActorOutput, IActorReply, IActorTest, IMediatorArgs, Mediator} from "@comunica/core";
+import { Actor, IAction, IActorOutput, IActorReply, IActorTest, IMediatorArgs, Mediator } from '@comunica/core';
 
 /**
  * A comunica mediator that runs all actors that resolve their test.
@@ -6,7 +6,6 @@ import {Actor, IAction, IActorOutput, IActorReply, IActorTest, IMediatorArgs, Me
  */
 export class MediatorAll<A extends Actor<I, T, O>, I extends IAction, T extends IActorTest, O extends IActorOutput>
   extends Mediator<A, I, T, O> {
-
   constructor(args: IMediatorArgs<A, I, T, O>) {
     super(args);
   }
@@ -17,20 +16,20 @@ export class MediatorAll<A extends Actor<I, T, O>, I extends IAction, T extends 
     let testResults: IActorReply<A, I, T, O>[];
     try {
       testResults = this.publish(action);
-    } catch (e) {
+    } catch (error) {
       testResults = [];
     }
     for (const testResult of testResults) {
       try {
         await testResult.reply;
         validActors.push(testResult.actor);
-      } catch (e) {
+      } catch (error) {
         // Ignore errors
       }
     }
 
     // Send action to all valid actors
-    const outputs = await Promise.all(validActors.map((actor) => actor.runObservable(action)));
+    const outputs = await Promise.all(validActors.map(actor => actor.runObservable(action)));
 
     return outputs[0];
   }
@@ -38,5 +37,4 @@ export class MediatorAll<A extends Actor<I, T, O>, I extends IAction, T extends 
   protected async mediateWith(action: I, testResults: IActorReply<A, I, T, O>[]): Promise<A> {
     throw new Error('Unsupported operation: MediatorAll#mediateWith');
   }
-
 }

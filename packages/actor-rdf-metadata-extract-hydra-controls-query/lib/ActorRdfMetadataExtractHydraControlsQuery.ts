@@ -1,15 +1,14 @@
-import {ActorRdfMetadataExtractQuery, IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput,
-  IActorRdfMetadataExtractQueryArgs} from "@comunica/bus-rdf-metadata-extract";
-import {IActorTest} from "@comunica/core";
-import * as RDF from "rdf-js";
-import {parse as parseUriTemplate, UriTemplate} from "uritemplate";
-import * as GRAPHQLLD_CONTEXT from "./context.json";
+import { ActorRdfMetadataExtractQuery, IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput,
+  IActorRdfMetadataExtractQueryArgs } from '@comunica/bus-rdf-metadata-extract';
+import { IActorTest } from '@comunica/core';
+import * as RDF from 'rdf-js';
+import { parse as parseUriTemplate, UriTemplate } from 'uritemplate';
+import * as GRAPHQLLD_CONTEXT from './context.json';
 
 /**
  * An RDF Metadata Extract Actor that extracts all Hydra search forms from the metadata stream.
  */
 export class ActorRdfMetadataExtractHydraControlsQuery extends ActorRdfMetadataExtractQuery {
-
   public static readonly GRAPHQLLD_QUERY: string = `
     query($pageUrl: String) @single(scope: all) {
       id
@@ -70,12 +69,10 @@ export class ActorRdfMetadataExtractHydraControlsQuery extends ActorRdfMetadataE
           acc[entry.property] = entry.variable;
           return acc;
         }, {});
-        const getUri = (entries: { [id: string]: string }) => {
-          return searchTemplate.expand(Object.keys(entries).reduce((variables: { [id: string]: string }, key) => {
-            variables[mappings[key]] = entries[key];
-            return variables;
-          }, {}));
-        };
+        const getUri = (entries: { [id: string]: string }) => searchTemplate.expand(Object.keys(entries).reduce((variables: { [id: string]: string }, key) => {
+          variables[mappings[key]] = entries[key];
+          return variables;
+        }, {}));
         values.push({
           dataset,
           getUri,
@@ -87,7 +84,6 @@ export class ActorRdfMetadataExtractHydraControlsQuery extends ActorRdfMetadataE
 
     return { values };
   }
-
 }
 
 export interface ISearchForm {

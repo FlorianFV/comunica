@@ -1,16 +1,15 @@
-import {IActorQueryOperationOutputBindings,
-  IActorQueryOperationOutputQuads} from "@comunica/bus-query-operation";
-import {ActorSparqlSerializeFixedMediaTypes, IActionSparqlSerialize,
-  IActorSparqlSerializeFixedMediaTypesArgs, IActorSparqlSerializeOutput} from "@comunica/bus-sparql-serialize";
-import {ActionContext} from "@comunica/core";
-import {Readable} from "stream";
-import {ActionObserverHttp} from "./ActionObserverHttp";
+import { IActorQueryOperationOutputBindings,
+  IActorQueryOperationOutputQuads } from '@comunica/bus-query-operation';
+import { ActorSparqlSerializeFixedMediaTypes, IActionSparqlSerialize,
+  IActorSparqlSerializeFixedMediaTypesArgs, IActorSparqlSerializeOutput } from '@comunica/bus-sparql-serialize';
+import { ActionContext } from '@comunica/core';
+import { Readable } from 'stream';
+import { ActionObserverHttp } from './ActionObserverHttp';
 
 /**
  * Serializes SPARQL results for testing and debugging.
  */
 export class ActorSparqlSerializeStats extends ActorSparqlSerializeFixedMediaTypes {
-
   public readonly httpObserver: ActionObserverHttp;
 
   constructor(args: IActorSparqlSerializeStatsArgs) {
@@ -18,48 +17,47 @@ export class ActorSparqlSerializeStats extends ActorSparqlSerializeFixedMediaTyp
   }
 
   public async testHandleChecked(action: IActionSparqlSerialize, context: ActionContext) {
-    if (['bindings', 'quads'].indexOf(action.type) < 0) {
+    if (![ 'bindings', 'quads' ].includes(action.type)) {
       throw new Error('This actor can only handle bindings streams or quad streams.');
     }
     return true;
   }
 
   public pushHeader(data: Readable) {
-    const header: string = ['Result', 'Delay (ms)', 'HTTP requests',
+    const header: string = [ 'Result', 'Delay (ms)', 'HTTP requests',
     ].join(',');
-    data.push(header + '\n');
+    data.push(`${header}\n`);
   }
 
   public pushStat(data: Readable, startTime: [number, number], result: number) {
-    const row: string = [result, this.delay(startTime), this.httpObserver.requests,
+    const row: string = [ result, this.delay(startTime), this.httpObserver.requests,
     ].join(',');
-    data.push(row + '\n');
+    data.push(`${row}\n`);
   }
 
   public pushFooter(data: Readable, startTime: [number, number]) {
-    const footer: string = ['TOTAL', this.delay(startTime), this.httpObserver.requests,
+    const footer: string = [ 'TOTAL', this.delay(startTime), this.httpObserver.requests,
     ].join(',');
-    data.push(footer + '\n');
+    data.push(`${footer}\n`);
     data.push(null);
   }
 
-  public async runHandle(action: IActionSparqlSerialize, mediaType: string, context: ActionContext)
-    : Promise<IActorSparqlSerializeOutput> {
+  public async runHandle(action: IActionSparqlSerialize, mediaType: string, context: ActionContext): Promise<IActorSparqlSerializeOutput> {
     const data = new Readable();
     data._read = () => {
-      return;
+
     };
 
     const resultStream: NodeJS.EventEmitter = action.type === 'bindings' ?
-    (<IActorQueryOperationOutputBindings> action).bindingsStream :
-    (<IActorQueryOperationOutputQuads> action).quadStream;
+      (<IActorQueryOperationOutputBindings> action).bindingsStream :
+      (<IActorQueryOperationOutputQuads> action).quadStream;
 
     // TODO: Make initiation timer configurable
     const startTime = process.hrtime();
-    let result: number = 1;
+    let result = 1;
 
     this.pushHeader(data);
-    resultStream.on('error', (e) => data.emit('error', e));
+    resultStream.on('error', e => data.emit('error', e));
     resultStream.on('data', () => this.pushStat(data, startTime, result++));
     resultStream.on('end', () => this.pushFooter(data, startTime));
 

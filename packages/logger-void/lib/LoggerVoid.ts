@@ -1,10 +1,9 @@
-import {Logger} from "@comunica/core";
+import { Logger } from '@comunica/core';
 
 /**
  * A logger that voids everything.
  */
 export class LoggerVoid extends Logger {
-
   public debug(message: string, data?: any): void {
     // Void
   }
@@ -28,5 +27,4 @@ export class LoggerVoid extends Logger {
   public warn(message: string, data?: any): void {
     // Void
   }
-
 }

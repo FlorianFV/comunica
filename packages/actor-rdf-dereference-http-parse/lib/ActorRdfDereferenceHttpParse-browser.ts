@@ -1,10 +1,9 @@
-import {ActorRdfDereferenceHttpParseBase, IActorRdfDereferenceHttpParseArgs} from "./ActorRdfDereferenceHttpParseBase";
+import { ActorRdfDereferenceHttpParseBase, IActorRdfDereferenceHttpParseArgs } from './ActorRdfDereferenceHttpParseBase';
 
 /**
  * The browser variant of {@link ActorRdfDereferenceHttpParse}.
  */
 export class ActorRdfDereferenceHttpParse extends ActorRdfDereferenceHttpParseBase {
-
   constructor(args: IActorRdfDereferenceHttpParseArgs) {
     super(args);
   }
@@ -12,5 +11,4 @@ export class ActorRdfDereferenceHttpParse extends ActorRdfDereferenceHttpParseBa
   protected getMaxAcceptHeaderLength(): number {
     return this.maxAcceptHeaderLengthBrowser;
   }
-
 }

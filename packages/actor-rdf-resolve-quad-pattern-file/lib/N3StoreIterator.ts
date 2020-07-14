@@ -24,9 +24,11 @@ export class N3StoreIterator extends BufferedIterator<RDF.Quad> {
 
   public _read(count: number, done: () => void): void {
     this.store.forEach((quad: RDF.Quad) => this._push(quad),
-      this.subject, this.predicate, this.object, this.graph);
+      this.subject,
+      this.predicate,
+      this.object,
+      this.graph);
     done();
     this.close();
   }
-
 }

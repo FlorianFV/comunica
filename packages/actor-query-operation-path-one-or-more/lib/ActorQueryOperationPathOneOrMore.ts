@@ -1,4 +1,4 @@
-import {ActorAbstractPath} from "@comunica/actor-abstract-path";
+import { ActorAbstractPath } from '@comunica/actor-abstract-path';
 import {
   ActorQueryOperation,
   Bindings, IActorQueryOperationOutputBindings,
@@ -14,26 +14,25 @@ import {Algebra} from "sparqlalgebrajs";
  * A comunica Path OneOrMore Query Operation Actor.
  */
 export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
-
   constructor(args: IActorQueryOperationTypedMediatedArgs) {
     super(args, Algebra.types.ONE_OR_MORE_PATH);
   }
 
-  public async runOperation(path: Algebra.Path, context: ActionContext)
-    : Promise<IActorQueryOperationOutputBindings> {
+  public async runOperation(path: Algebra.Path, context: ActionContext): Promise<IActorQueryOperationOutputBindings> {
     const predicate = <Algebra.OneOrMorePath> path.predicate;
 
     const sVar = path.subject.termType === 'Variable';
     const oVar = path.object.termType === 'Variable';
 
     if (!sVar && oVar) {
-      // get all the results of applying this once, then do zeroOrMore for those
+      // Get all the results of applying this once, then do zeroOrMore for those
       const single = ActorAbstractPath.FACTORY.createPath(path.subject, predicate.path, path.object, path.graph);
       const results = ActorQueryOperation.getSafeBindings(
-        await this.mediatorQueryOperation.mediate({context, operation: single}));
+        await this.mediatorQueryOperation.mediate({ context, operation: single }),
+      );
       const o = termToString(path.object);
 
-      // all branches need to share the same V to prevent duplicates
+      // All branches need to share the same V to prevent duplicates
       const V = {};
 
       const bindingsStream
@@ -64,11 +63,13 @@ export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
         operation: ActorAbstractPath.FACTORY.createPath(
           path.object,
           ActorAbstractPath.FACTORY.createOneOrMorePath(
-            ActorAbstractPath.FACTORY.createInv(predicate.path)),
+            ActorAbstractPath.FACTORY.createInv(predicate.path),
+          ),
           path.subject,
-          path.graph),
+          path.graph,
+        ),
       });
-    } else { // if (!sVar && !oVar)
+    } else { // If (!sVar && !oVar)
       const b = this.generateBlankNode();
       const bString = termToString(b);
       const results = ActorQueryOperation.getSafeBindings(await this.mediatorQueryOperation.mediate({
@@ -85,5 +86,4 @@ export class ActorQueryOperationPathOneOrMore extends ActorAbstractPath {
       return { type: 'bindings', bindingsStream, variables: [] };
     }
   }
-
 }

@@ -1,8 +1,8 @@
-import {ActorAbstractMediaTypedFixed, IActorArgsMediaTypedFixed} from "@comunica/actor-abstract-mediatyped";
-import {IActorTest} from "@comunica/core";
+import { ActorAbstractMediaTypedFixed, IActorArgsMediaTypedFixed } from '@comunica/actor-abstract-mediatyped';
+import { IActorTest } from '@comunica/core';
 import {
   IActionRdfSerialize, IActorRdfSerializeOutput,
-} from "./ActorRdfSerialize";
+} from './ActorRdfSerialize';
 
 /**
  * A base actor for listening to RDF serialize events that has fixed media types.
@@ -15,8 +15,7 @@ import {
  * @see IActionInit
  */
 export abstract class ActorRdfSerializeFixedMediaTypes extends ActorAbstractMediaTypedFixed<
-  IActionRdfSerialize, IActorTest, IActorRdfSerializeOutput> implements IActorRdfSerializeFixedMediaTypesArgs {
-
+IActionRdfSerialize, IActorTest, IActorRdfSerializeOutput> implements IActorRdfSerializeFixedMediaTypesArgs {
   constructor(args: IActorRdfSerializeFixedMediaTypesArgs) {
     super(args);
   }
@@ -24,7 +23,6 @@ export abstract class ActorRdfSerializeFixedMediaTypes extends ActorAbstractMedi
   public async testHandleChecked(action: IActionRdfSerialize) {
     return true;
   }
-
 }
 
 export interface IActorRdfSerializeFixedMediaTypesArgs

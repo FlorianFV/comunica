@@ -17,7 +17,6 @@ import {TransformIterator} from "asynciterator";
  * A comunica LeftJoin left-deep Query Operation Actor.
  */
 export class ActorQueryOperationLeftJoinLeftDeep extends ActorQueryOperationTypedMediated<Algebra.LeftJoin> {
-
   private static readonly FACTORY = new Factory();
 
   constructor(args: IActorQueryOperationTypedMediatedArgs) {
@@ -53,8 +52,7 @@ export class ActorQueryOperationLeftJoinLeftDeep extends ActorQueryOperationType
     return true;
   }
 
-  public async runOperation(pattern: Algebra.LeftJoin, context: ActionContext)
-    : Promise<IActorQueryOperationOutputBindings> {
+  public async runOperation(pattern: Algebra.LeftJoin, context: ActionContext): Promise<IActorQueryOperationOutputBindings> {
     // Initiate left and right operations
     // Only the left stream will be used.
     // The right stream is ignored and only its metadata and variables are used.
@@ -67,29 +65,28 @@ export class ActorQueryOperationLeftJoinLeftDeep extends ActorQueryOperationType
     right.bindingsStream.close();
 
     // If an expression was defined, wrap the right operation in a filter expression.
-    const rightOperation = pattern.expression
-      ? ActorQueryOperationLeftJoinLeftDeep.FACTORY.createFilter(pattern.right, pattern.expression)
-      : pattern.right;
+    const rightOperation = pattern.expression ?
+      ActorQueryOperationLeftJoinLeftDeep.FACTORY.createFilter(pattern.right, pattern.expression) :
+      pattern.right;
 
     // Create a left-deep stream with left and right.
-    const bindingsStream = ActorQueryOperationLeftJoinLeftDeep.createLeftDeepStream(left.bindingsStream, rightOperation,
-      async (operation: Algebra.Operation) => ActorQueryOperation.getSafeBindings(
-        await this.mediatorQueryOperation.mediate({ operation, context })).bindingsStream);
+    const bindingsStream = ActorQueryOperationLeftJoinLeftDeep.createLeftDeepStream(left.bindingsStream, rightOperation, async(operation: Algebra.Operation) => ActorQueryOperation.getSafeBindings(
+      await this.mediatorQueryOperation.mediate({ operation, context }),
+    ).bindingsStream);
 
     // Determine variables and metadata
-    const variables = ActorRdfJoin.joinVariables({ entries: [left, right] });
-    const metadata = () => Promise.all([left, right].map(getMetadata))
-      .then((metadatas) => metadatas.reduce((acc, val) => acc * val.totalItems, 1))
+    const variables = ActorRdfJoin.joinVariables({ entries: [ left, right ] });
+    const metadata = () => Promise.all([ left, right ].map(x => getMetadata(x)))
+      .then(metadatas => metadatas.reduce((acc, val) => acc * val.totalItems, 1))
       .catch(() => Infinity)
-      .then((totalItems) => ({ totalItems }));
+      .then(totalItems => ({ totalItems }));
 
     // TODO: We manually trigger the left metadata to be resolved.
     //       If we don't do this, the inner metadata event seems to be lost in some cases,
     //       the left promise above is never resolved, this whole metadata promise is never resolved,
     //       and the application terminates without producing any results.
-    getMetadata(left).catch(() => { return; });
+    getMetadata(left).catch(() => { });
 
     return { type: 'bindings', bindingsStream, metadata, variables };
   }
-
 }

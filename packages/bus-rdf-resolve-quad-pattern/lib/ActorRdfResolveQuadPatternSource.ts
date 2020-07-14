@@ -6,7 +6,7 @@ import {
   ActorRdfResolveQuadPattern,
   IActionRdfResolveQuadPattern,
   IActorRdfResolveQuadPatternOutput,
-} from "./ActorRdfResolveQuadPattern";
+} from './ActorRdfResolveQuadPattern';
 
 /**
  * A base implementation for rdf-resolve-quad-pattern events
@@ -15,7 +15,6 @@ import {
  * @see RDF.Source
  */
 export abstract class ActorRdfResolveQuadPatternSource extends ActorRdfResolveQuadPattern {
-
   constructor(args: IActorArgs<IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>) {
     super(args);
   }
@@ -60,11 +59,11 @@ export abstract class ActorRdfResolveQuadPatternSource extends ActorRdfResolveQu
    * @return {() => Promise<{[p: string]: any}>} A lazy promise behind a callback resolving to a metadata object.
    */
   protected getMetadata(source: ILazyQuadSource, pattern: RDF.BaseQuad, context: ActionContext | undefined,
-                        data: AsyncIterator<RDF.Quad> & RDF.Stream): () => Promise<{[id: string]: any}> {
+    data: AsyncIterator<RDF.Quad> & RDF.Stream): () => Promise<{[id: string]: any}> {
     return () => new Promise((resolve, reject) => {
       data.on('error', reject);
       data.on('end', () => resolve({}));
-      data.on('metadata', (metadata) => {
+      data.on('metadata', metadata => {
         resolve(metadata);
       });
     });
@@ -78,8 +77,7 @@ export abstract class ActorRdfResolveQuadPatternSource extends ActorRdfResolveQu
    * @return {Promise<IActorRdfResolveQuadPatternOutput>} A promise that resolves to a hash containing
    *                                                      a data RDFJS stream and an optional metadata hash.
    */
-  protected async getOutput(source: ILazyQuadSource, pattern: RDF.BaseQuad, context?: ActionContext)
-  : Promise<IActorRdfResolveQuadPatternOutput> {
+  protected async getOutput(source: ILazyQuadSource, pattern: RDF.BaseQuad, context?: ActionContext): Promise<IActorRdfResolveQuadPatternOutput> {
     // Create data stream
     let data: AsyncIterator<RDF.Quad> & RDF.Stream;
     if (source.matchLazy) {
@@ -100,7 +98,8 @@ export abstract class ActorRdfResolveQuadPatternSource extends ActorRdfResolveQu
 
     // Create metadata callback
     const metadata = ActorRdfResolveQuadPatternSource.cachifyMetadata(
-      this.getMetadata(source, pattern, context, data));
+      this.getMetadata(source, pattern, context, data),
+    );
 
     return { data, metadata };
   }
@@ -112,7 +111,6 @@ export abstract class ActorRdfResolveQuadPatternSource extends ActorRdfResolveQu
    * @return {Promise<RDF.Source>} A promise that resolves to a source.
    */
   protected abstract getSource(context: ActionContext | undefined, operation: Algebra.Pattern): Promise<RDF.Source>;
-
 }
 
 /**
@@ -132,7 +130,7 @@ export interface ILazyQuadSource<Q extends RDF.BaseQuad = RDF.Quad> extends RDF.
    * @return {RDF.Stream} The resulting quad stream.
    */
   matchLazy?(subject?: RDF.Term | RegExp, predicate?: RDF.Term | RegExp, object?: RDF.Term | RegExp,
-             graph?: RDF.Term | RegExp): AsyncIterator<Q> & RDF.Stream<Q>;
+    graph?: RDF.Term | RegExp): AsyncIterator<Q> & RDF.Stream<Q>;
 
   /**
    * Return an estimated count of the number of quads matching the given pattern.

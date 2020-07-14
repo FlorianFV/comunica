@@ -1,9 +1,9 @@
-import {IActionRdfDereference, IActorRdfDereferenceOutput} from "@comunica/bus-rdf-dereference";
-import {IActionRdfMetadata, IActorRdfMetadataOutput} from "@comunica/bus-rdf-metadata";
-import {IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput} from "@comunica/bus-rdf-metadata-extract";
-import {ActionContext, Actor, IActorTest, Mediator} from "@comunica/core";
-import * as RDF from "rdf-js";
-import {PagedAsyncRdfIterator} from "./PagedAsyncRdfIterator";
+import { IActionRdfDereference, IActorRdfDereferenceOutput } from '@comunica/bus-rdf-dereference';
+import { IActionRdfMetadata, IActorRdfMetadataOutput } from '@comunica/bus-rdf-metadata';
+import { IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput } from '@comunica/bus-rdf-metadata-extract';
+import { ActionContext, Actor, IActorTest, Mediator } from '@comunica/core';
+import * as RDF from 'rdf-js';
+import { PagedAsyncRdfIterator } from './PagedAsyncRdfIterator';
 
 /**
  * A PagedAsyncRdfIterator that pages based on a set of mediators.
@@ -18,26 +18,28 @@ import {PagedAsyncRdfIterator} from "./PagedAsyncRdfIterator";
  * possibly containing another 'next' link.
  */
 export class MediatedPagedAsyncRdfIterator extends PagedAsyncRdfIterator {
-
   public readonly firstPageData: RDF.Stream;
   public readonly firstPageMetadata: () => Promise<{[id: string]: any}>;
   public readonly mediatorRdfDereference: Mediator<Actor<IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>,
-    IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>;
+  IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>;
+
   public readonly mediatorMetadata: Mediator<Actor<IActionRdfMetadata, IActorTest, IActorRdfMetadataOutput>,
-    IActionRdfMetadata, IActorTest, IActorRdfMetadataOutput>;
+  IActionRdfMetadata, IActorTest, IActorRdfMetadataOutput>;
+
   public readonly mediatorMetadataExtract: Mediator<Actor<IActionRdfMetadataExtract, IActorTest,
-    IActorRdfMetadataExtractOutput>, IActionRdfMetadataExtract, IActorTest, IActorRdfMetadataExtractOutput>;
+  IActorRdfMetadataExtractOutput>, IActionRdfMetadataExtract, IActorTest, IActorRdfMetadataExtractOutput>;
+
   public readonly context?: ActionContext;
 
   constructor(firstPageUrl: string, firstPageData: RDF.Stream, firstPageMetadata: () => Promise<{[id: string]: any}>,
-              mediatorRdfDereference: Mediator<Actor<IActionRdfDereference, IActorTest,
-                IActorRdfDereferenceOutput>, IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>,
-              mediatorMetadata: Mediator<Actor<IActionRdfMetadata, IActorTest, IActorRdfMetadataOutput>,
-                IActionRdfMetadata, IActorTest, IActorRdfMetadataOutput>,
-              mediatorMetadataExtract: Mediator<Actor<IActionRdfMetadataExtract, IActorTest,
-                IActorRdfMetadataExtractOutput>, IActionRdfMetadataExtract, IActorTest,
-                IActorRdfMetadataExtractOutput>,
-              context?: ActionContext) {
+    mediatorRdfDereference: Mediator<Actor<IActionRdfDereference, IActorTest,
+    IActorRdfDereferenceOutput>, IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>,
+    mediatorMetadata: Mediator<Actor<IActionRdfMetadata, IActorTest, IActorRdfMetadataOutput>,
+    IActionRdfMetadata, IActorTest, IActorRdfMetadataOutput>,
+    mediatorMetadataExtract: Mediator<Actor<IActionRdfMetadataExtract, IActorTest,
+    IActorRdfMetadataExtractOutput>, IActionRdfMetadataExtract, IActorTest,
+    IActorRdfMetadataExtractOutput>,
+    context?: ActionContext) {
     super(firstPageUrl, { autoStart: false });
     this.firstPageData = firstPageData;
     this.firstPageMetadata = firstPageMetadata;
@@ -53,24 +55,25 @@ export class MediatedPagedAsyncRdfIterator extends PagedAsyncRdfIterator {
     // Don't call mediators again if we are on the first page
     if (!page) {
       pageData = this.firstPageData;
-      let next: string = '';
+      let next = '';
       try {
         next = (await this.firstPageMetadata()).next;
-      } catch (e) {
-        this.emit('error', e);
+      } catch (error) {
+        this.emit('error', error);
       }
       onNextPage(next);
     } else {
       const pageQuads: IActorRdfDereferenceOutput = await this.mediatorRdfDereference
         .mediate({ context: this.context, url });
       const pageMetaSplit: IActorRdfMetadataOutput = await this.mediatorMetadata.mediate(
-          { context: this.context, url: pageQuads.url, quads: pageQuads.quads, triples: pageQuads.triples });
+        { context: this.context, url: pageQuads.url, quads: pageQuads.quads, triples: pageQuads.triples },
+      );
       pageData = pageMetaSplit.data;
 
       // Don't await, we want to process metadata in the background.
       this.mediatorMetadataExtract
         .mediate({ context: this.context, url: pageQuads.url, metadata: pageMetaSplit.metadata })
-        .then((result) => onNextPage(result.metadata.next)).catch((e) => this.emit('error', e));
+        .then(result => onNextPage(result.metadata.next)).catch(error => this.emit('error', error));
     }
 
     return pageData;

@@ -16,7 +16,7 @@ import {ArrayIterator} from "asynciterator";
 const stringToStream = require('streamify-string');
 const quad = require('rdf-quad');
 
-jest.mock('../index', () => {
+jest.mock('..', () => {
   return {
     newEngineDynamic,
   };

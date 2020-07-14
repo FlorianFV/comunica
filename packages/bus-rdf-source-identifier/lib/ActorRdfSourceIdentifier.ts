@@ -1,5 +1,5 @@
-import {Actor, IAction, IActorArgs, IActorOutput, IActorTest} from "@comunica/core";
-import {IMediatorTypePriority} from "@comunica/mediatortype-priority";
+import { Actor, IAction, IActorArgs, IActorOutput, IActorTest } from '@comunica/core';
+import { IMediatorTypePriority } from '@comunica/mediatortype-priority';
 
 /**
  * A comunica actor for rdf-source-identifier events.
@@ -14,7 +14,6 @@ import {IMediatorTypePriority} from "@comunica/mediatortype-priority";
  */
 export abstract class ActorRdfSourceIdentifier
   extends Actor<IActionRdfSourceIdentifier, IActorTest, IActorRdfSourceIdentifierOutput> {
-
   public readonly priority: number;
 
   constructor(args: IActorRdfSourceIdentifierArgs) {
@@ -29,7 +28,6 @@ export abstract class ActorRdfSourceIdentifier
     }
     return action.sourceValue.replace(/#.*/, '');
   }
-
 }
 
 export interface IActionRdfSourceIdentifier extends IAction {

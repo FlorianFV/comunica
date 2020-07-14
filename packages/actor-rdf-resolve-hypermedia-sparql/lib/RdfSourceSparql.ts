@@ -12,17 +12,16 @@ import {
 } from "@comunica/actor-rdf-resolve-quad-pattern-sparql-json";
 
 export class RdfSourceSparql implements RDF.Source {
-
   protected static readonly FACTORY: Factory = new Factory();
 
   private readonly url: string;
   private readonly context: ActionContext | undefined;
   private readonly mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-    IActionHttp, IActorTest, IActorHttpOutput>;
+  IActionHttp, IActorTest, IActorHttpOutput>;
 
   constructor(url: string, context: ActionContext | undefined,
-              mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-                IActionHttp, IActorTest, IActorHttpOutput>) {
+    mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
+    IActionHttp, IActorTest, IActorHttpOutput>) {
     this.url = url;
     this.context = context;
     this.mediatorHttp = mediatorHttp;
@@ -50,14 +49,14 @@ export class RdfSourceSparql implements RDF.Source {
   }
 
   public match(subject?: RegExp | RDF.Term,
-               predicate?: RegExp | RDF.Term,
-               object?: RegExp | RDF.Term,
-               graph?: RegExp | RDF.Term): RDF.Stream {
-    if (subject instanceof RegExp
-      || predicate instanceof RegExp
-      || object instanceof RegExp
-      || graph instanceof RegExp) {
-      throw new Error("RdfSourceSparql does not support matching by regular expressions.");
+    predicate?: RegExp | RDF.Term,
+    object?: RegExp | RDF.Term,
+    graph?: RegExp | RDF.Term): RDF.Stream {
+    if (subject instanceof RegExp ||
+      predicate instanceof RegExp ||
+      object instanceof RegExp ||
+      graph instanceof RegExp) {
+      throw new Error('RdfSourceSparql does not support matching by regular expressions.');
     }
 
     const pattern = ActorRdfResolveQuadPatternSparqlJson.replaceBlankNodes(RdfSourceSparql.FACTORY.createPattern(
@@ -108,5 +107,4 @@ export class RdfSourceSparql implements RDF.Source {
 
     return quads;
   }
-
 }

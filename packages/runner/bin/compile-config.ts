@@ -3,10 +3,10 @@
 // where all dependencies are injected.
 // This is a simplified version of components-compile-config that is shipped with Components.js.
 
-import {compileConfig} from "componentsjs";
-import {createReadStream} from "fs";
-import {Stream} from "stream";
-import {sep} from "path";
+import { compileConfig } from 'componentsjs';
+import { createReadStream } from 'fs';
+import { Stream } from 'stream';
+import { sep } from 'path';
 
 const args = process.argv.slice(2);
 
@@ -16,10 +16,10 @@ if (!args.length) {
 }
 
 const mainModulePath: string = process.cwd();
-const configResourceUri: string = 'urn:comunica:my';
+const configResourceUri = 'urn:comunica:my';
 const configPath: string = args[0];
 const configStreamRaw: Stream = createReadStream(configPath, { encoding: 'utf8' });
-let exportVariableName: string = 'urn:comunica:sparqlinit';
+let exportVariableName = 'urn:comunica:sparqlinit';
 if (args.length > 1) {
   exportVariableName = args[1];
 }
@@ -31,12 +31,12 @@ if (require.main) {
   require.main.paths = [];
   const pathParts = mainModulePath.split(sep);
   for (let i = pathParts.length; i > 0; i--) {
-    require.main.paths.push(pathParts.slice(0, i).join(sep) + sep + 'node_modules');
+    require.main.paths.push(`${pathParts.slice(0, i).join(sep) + sep}node_modules`);
   }
 }
 
 compileConfig({ mainModulePath }, configPath, configStreamRaw, configResourceUri, exportVariableName)
-  .then(console.log).catch((e) => {
-    console.error(e);
+  .then(console.log).catch(error => {
+    console.error(error);
     process.exit(1);
   });

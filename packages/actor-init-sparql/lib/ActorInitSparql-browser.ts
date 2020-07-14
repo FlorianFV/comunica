@@ -1,10 +1,10 @@
-import {IActorContextPreprocessOutput} from "@comunica/bus-context-preprocess";
-import {IActionHttpInvalidate, IActorHttpInvalidateOutput} from "@comunica/bus-http-invalidate";
-import {ActorInit, IActionInit, IActorOutputInit} from "@comunica/bus-init";
+import { IActorContextPreprocessOutput } from '@comunica/bus-context-preprocess';
+import { IActionHttpInvalidate, IActorHttpInvalidateOutput } from '@comunica/bus-http-invalidate';
+import { ActorInit, IActionInit, IActorOutputInit } from '@comunica/bus-init';
 import {
   IActionOptimizeQueryOperation,
   IActorOptimizeQueryOperationOutput,
-} from "@comunica/bus-optimize-query-operation";
+} from '@comunica/bus-optimize-query-operation';
 import {
   ensureBindings,
   IActionQueryOperation,
@@ -12,9 +12,9 @@ import {
   KEY_CONTEXT_BASEIRI,
   KEY_CONTEXT_QUERY_TIMESTAMP,
   materializeOperation,
-} from "@comunica/bus-query-operation";
-import {IDataSource, isDataSourceRawType, KEY_CONTEXT_SOURCES} from "@comunica/bus-rdf-resolve-quad-pattern";
-import {IActionSparqlParse, IActorSparqlParseOutput} from "@comunica/bus-sparql-parse";
+} from '@comunica/bus-query-operation';
+import { IDataSource, isDataSourceRawType, KEY_CONTEXT_SOURCES } from '@comunica/bus-rdf-resolve-quad-pattern';
+import { IActionSparqlParse, IActorSparqlParseOutput } from '@comunica/bus-sparql-parse';
 import {
   IActionRootSparqlParse,
   IActionSparqlSerialize,
@@ -28,40 +28,49 @@ import {
   IActorTestRootSparqlParse,
   IActorTestSparqlSerializeHandle, IActorTestSparqlSerializeMediaTypeFormats,
   IActorTestSparqlSerializeMediaTypes,
-} from "@comunica/bus-sparql-serialize";
-import {ActionContext, Actor, IAction, IActorArgs, IActorTest, KEY_CONTEXT_LOG, Logger, Mediator} from "@comunica/core";
-import {AsyncReiterableArray} from "asyncreiterable";
-import {Algebra} from "sparqlalgebrajs";
+} from '@comunica/bus-sparql-serialize';
+import { ActionContext, Actor, IAction, IActorArgs, IActorTest, KEY_CONTEXT_LOG, Logger, Mediator } from '@comunica/core';
+import { AsyncReiterableArray } from 'asyncreiterable';
+import { Algebra } from 'sparqlalgebrajs';
 
 /**
  * A browser-safe comunica SPARQL Init Actor.
  */
 export class ActorInitSparql extends ActorInit implements IActorInitSparqlArgs {
-
-  private static ALGEBRA_TYPES: {[type: string]: boolean} = Object.keys(Algebra.types)
-    .reduce((acc: {[type: string]: boolean}, key) => { acc[(<any> Algebra.types)[key]] = true; return acc; }, {});
+  private static readonly ALGEBRA_TYPES: {[type: string]: boolean} = Object.keys(Algebra.types)
+    .reduce((acc: {[type: string]: boolean}, key) => {
+      acc[(<any> Algebra.types)[key]] = true; return acc;
+    }, {});
 
   public readonly mediatorOptimizeQueryOperation: Mediator<Actor<IActionOptimizeQueryOperation, IActorTest,
-    IActorOptimizeQueryOperationOutput>, IActionOptimizeQueryOperation, IActorTest, IActorOptimizeQueryOperationOutput>;
+  IActorOptimizeQueryOperationOutput>, IActionOptimizeQueryOperation, IActorTest, IActorOptimizeQueryOperationOutput>;
+
   public readonly mediatorQueryOperation: Mediator<Actor<IActionQueryOperation, IActorTest, IActorQueryOperationOutput>,
-    IActionQueryOperation, IActorTest, IActorQueryOperationOutput>;
+  IActionQueryOperation, IActorTest, IActorQueryOperationOutput>;
+
   public readonly mediatorSparqlParse: Mediator<Actor<IActionSparqlParse, IActorTest, IActorSparqlParseOutput>,
-    IActionSparqlParse, IActorTest, IActorSparqlParseOutput>;
+  IActionSparqlParse, IActorTest, IActorSparqlParseOutput>;
+
   public readonly mediatorSparqlSerialize: Mediator<
-    Actor<IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>,
-    IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>;
+  Actor<IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>,
+  IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>;
+
   public readonly mediatorSparqlSerializeMediaTypeCombiner: Mediator<
-    Actor<IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>,
-    IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>;
+  Actor<IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>,
+  IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>;
+
   public readonly mediatorSparqlSerializeMediaTypeFormatCombiner: Mediator<
-    Actor<IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
-      IActorOutputSparqlSerializeMediaTypeFormats>,
-    IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
-    IActorOutputSparqlSerializeMediaTypeFormats>;
+  Actor<IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
+  IActorOutputSparqlSerializeMediaTypeFormats>,
+  IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
+  IActorOutputSparqlSerializeMediaTypeFormats>;
+
   public readonly mediatorContextPreprocess: Mediator<Actor<IAction, IActorTest,
-    IActorContextPreprocessOutput>, IAction, IActorTest, IActorContextPreprocessOutput>;
+  IActorContextPreprocessOutput>, IAction, IActorTest, IActorContextPreprocessOutput>;
+
   public readonly mediatorHttpInvalidate: Mediator<Actor<IActionHttpInvalidate, IActorTest, IActorHttpInvalidateOutput>,
-    IActionHttpInvalidate, IActorTest, IActorHttpInvalidateOutput>;
+  IActionHttpInvalidate, IActorTest, IActorHttpInvalidateOutput>;
+
   public readonly logger: Logger;
   public readonly queryString?: string;
   public readonly defaultQueryInputFormat?: string;
@@ -116,7 +125,7 @@ export class ActorInitSparql extends ActorInit implements IActorInitSparqlArgs {
 
     // Prepare context
     context = ActionContext(context);
-    let queryFormat: string = 'sparql';
+    let queryFormat = 'sparql';
     if (context && context.has(KEY_CONTEXT_QUERYFORMAT)) {
       queryFormat = context.get(KEY_CONTEXT_QUERYFORMAT);
       context = context.delete(KEY_CONTEXT_QUERYFORMAT);
@@ -184,21 +193,20 @@ export class ActorInitSparql extends ActorInit implements IActorInitSparqlArgs {
    * @param {ActionContext} context An optional context.
    * @return {Promise<IActorSparqlSerializeOutput>} A text stream.
    */
-  public async resultToString(queryResult: IActorQueryOperationOutput, mediaType?: string, context?: any)
-  : Promise<IActorSparqlSerializeOutput> {
+  public async resultToString(queryResult: IActorQueryOperationOutput, mediaType?: string, context?: any): Promise<IActorSparqlSerializeOutput> {
     context = ActionContext(context);
 
     if (!mediaType) {
       switch (queryResult.type) {
-      case 'bindings':
-        mediaType = 'application/json';
-        break;
-      case 'quads':
-        mediaType = 'application/trig';
-        break;
-      default:
-        mediaType = 'simple';
-        break;
+        case 'bindings':
+          mediaType = 'application/json';
+          break;
+        case 'quads':
+          mediaType = 'application/trig';
+          break;
+        default:
+          mediaType = 'simple';
+          break;
       }
     }
     const handle: IActionSparqlSerialize = queryResult;
@@ -219,31 +227,30 @@ export class ActorInitSparql extends ActorInit implements IActorInitSparqlArgs {
   public async run(action: IActionInit): Promise<IActorOutputInit> {
     throw new Error('ActorInitSparql#run is not supported in the browser.');
   }
-
 }
 
 export interface IActorInitSparqlArgs extends IActorArgs<IActionInit, IActorTest, IActorOutputInit> {
   mediatorOptimizeQueryOperation: Mediator<Actor<IActionOptimizeQueryOperation, IActorTest,
-    IActorOptimizeQueryOperationOutput>, IActionOptimizeQueryOperation, IActorTest, IActorOptimizeQueryOperationOutput>;
+  IActorOptimizeQueryOperationOutput>, IActionOptimizeQueryOperation, IActorTest, IActorOptimizeQueryOperationOutput>;
   mediatorQueryOperation: Mediator<Actor<IActionQueryOperation, IActorTest, IActorQueryOperationOutput>,
-    IActionQueryOperation, IActorTest, IActorQueryOperationOutput>;
+  IActionQueryOperation, IActorTest, IActorQueryOperationOutput>;
   mediatorSparqlParse: Mediator<Actor<IActionSparqlParse, IActorTest, IActorSparqlParseOutput>,
-    IActionSparqlParse, IActorTest, IActorSparqlParseOutput>;
+  IActionSparqlParse, IActorTest, IActorSparqlParseOutput>;
   mediatorSparqlSerialize: Mediator<
-    Actor<IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>,
-    IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>;
+  Actor<IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>,
+  IActionSparqlSerializeHandle, IActorTestSparqlSerializeHandle, IActorOutputSparqlSerializeHandle>;
   mediatorSparqlSerializeMediaTypeCombiner: Mediator<
-    Actor<IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>,
-    IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>;
+  Actor<IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>,
+  IActionSparqlSerializeMediaTypes, IActorTestSparqlSerializeMediaTypes, IActorOutputSparqlSerializeMediaTypes>;
   mediatorSparqlSerializeMediaTypeFormatCombiner: Mediator<
-    Actor<IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
-      IActorOutputSparqlSerializeMediaTypeFormats>,
-    IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
-    IActorOutputSparqlSerializeMediaTypeFormats>;
+  Actor<IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
+  IActorOutputSparqlSerializeMediaTypeFormats>,
+  IActionSparqlSerializeMediaTypeFormats, IActorTestSparqlSerializeMediaTypeFormats,
+  IActorOutputSparqlSerializeMediaTypeFormats>;
   mediatorContextPreprocess: Mediator<Actor<IAction, IActorTest, IActorContextPreprocessOutput>,
-    IAction, IActorTest, IActorContextPreprocessOutput>;
+  IAction, IActorTest, IActorContextPreprocessOutput>;
   mediatorHttpInvalidate: Mediator<Actor<IActionHttpInvalidate, IActorTest, IActorHttpInvalidateOutput>,
-    IActionHttpInvalidate, IActorTest, IActorHttpInvalidateOutput>;
+  IActionHttpInvalidate, IActorTest, IActorHttpInvalidateOutput>;
   logger: Logger;
   queryString?: string;
   defaultQueryInputFormat?: string;
@@ -251,7 +258,7 @@ export interface IActorInitSparqlArgs extends IActorArgs<IActionInit, IActorTest
   contextKeyShortcuts: {[shortcut: string]: string};
 }
 
-export const KEY_CONTEXT_INITIALBINDINGS: string = '@comunica/actor-init-sparql:initialBindings';
-export const KEY_CONTEXT_QUERYFORMAT: string = '@comunica/actor-init-sparql:queryFormat';
-export const KEY_CONTEXT_GRAPHQL_SINGULARIZEVARIABLES: string = '@comunica/actor-init-sparql:singularizeVariables';
-export const KEY_CONTEXT_LENIENT: string = '@comunica/actor-init-sparql:lenient';
+export const KEY_CONTEXT_INITIALBINDINGS = '@comunica/actor-init-sparql:initialBindings';
+export const KEY_CONTEXT_QUERYFORMAT = '@comunica/actor-init-sparql:queryFormat';
+export const KEY_CONTEXT_GRAPHQL_SINGULARIZEVARIABLES = '@comunica/actor-init-sparql:singularizeVariables';
+export const KEY_CONTEXT_LENIENT = '@comunica/actor-init-sparql:lenient';

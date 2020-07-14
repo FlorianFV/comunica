@@ -1,20 +1,20 @@
-/*! @license MIT ©2016 Ruben Verborgh, Ghent University - imec */
+/* ! @license MIT ©2016 Ruben Verborgh, Ghent University - imec */
 /* Single-function HTTP(S) request module */
 /* Translated from https://github.com/LinkedDataFragments/Client.js/blob/master/lib/util/Request.js */
 
-import {EventEmitter} from "events";
-import {AgentOptions, ClientRequest, IncomingMessage} from "http";
-import * as url from "url";
-import * as zlib from "zlib";
+import { EventEmitter } from 'events';
+import { AgentOptions, ClientRequest, IncomingMessage } from 'http';
+import * as url from 'url';
+import * as zlib from 'zlib';
 
-const http = require("follow-redirects").http; // tslint:disable-line no-var-requires
-const https = require("follow-redirects").https; // tslint:disable-line no-var-requires
+const { http } = require('follow-redirects'); // Tslint:disable-line no-var-requires
+const { https } = require('follow-redirects'); // Tslint:disable-line no-var-requires
 
 // Decode encoded streams with these decoders
-const DECODERS = {gzip: zlib.createGunzip, deflate: zlib.createInflate};
+const DECODERS = { gzip: zlib.createGunzip, deflate: zlib.createInflate };
 
 export default class Requester {
-  private agents: any;
+  private readonly agents: any;
 
   constructor(agentOptions?: AgentOptions) {
     this.agents = {
@@ -38,11 +38,11 @@ export default class Requester {
     request = requester.request(settings, (response: IncomingMessage) => {
       response = this.decode(response);
       response.setEncoding('utf8');
-      // this was removed compared to the original LDF client implementation
+      // This was removed compared to the original LDF client implementation
       // response.pause(); // exit flow mode
       requestProxy.emit('response', response);
     });
-    request.on('error', (error) => requestProxy.emit('error', error));
+    request.on('error', error => requestProxy.emit('error', error));
     request.end();
     return requestProxy;
   }
@@ -62,7 +62,7 @@ export default class Requester {
       }
       // Error when no suitable decoder found
       setImmediate(() => {
-        response.emit('error', new Error('Unsupported encoding: ' + encoding));
+        response.emit('error', new Error(`Unsupported encoding: ${encoding}`));
       });
     }
     return response;

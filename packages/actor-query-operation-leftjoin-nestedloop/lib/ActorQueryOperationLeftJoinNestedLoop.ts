@@ -12,7 +12,6 @@ import { AsyncEvaluator, isExpressionError } from 'sparqlee';
  * A comunica LeftJoin NestedLoop Query Operation Actor.
  */
 export class ActorQueryOperationLeftJoinNestedLoop extends ActorQueryOperationTypedMediated<Algebra.LeftJoin> {
-
   constructor(args: IActorQueryOperationTypedMediatedArgs) {
     super(args, 'leftjoin');
   }
@@ -21,9 +20,7 @@ export class ActorQueryOperationLeftJoinNestedLoop extends ActorQueryOperationTy
     return true;
   }
 
-  public async runOperation(pattern: Algebra.LeftJoin, context: ActionContext)
-    : Promise<IActorQueryOperationOutputBindings> {
-
+  public async runOperation(pattern: Algebra.LeftJoin, context: ActionContext): Promise<IActorQueryOperationOutputBindings> {
     const leftRaw = await this.mediatorQueryOperation.mediate({ operation: pattern.left, context });
     const left = ActorQueryOperation.getSafeBindings(leftRaw);
     const rightRaw = await this.mediatorQueryOperation.mediate({ operation: pattern.right, context });
@@ -31,16 +28,18 @@ export class ActorQueryOperationLeftJoinNestedLoop extends ActorQueryOperationTy
 
     // TODO: refactor custom handling of pattern.expression. Should be pushed on the bus instead as a filter operation.
     const config = { ...ActorQueryOperation.getExpressionContext(context) };
-    const evaluator = pattern.expression
-      ? new AsyncEvaluator(pattern.expression, config)
-      : null;
+    const evaluator = pattern.expression ?
+      new AsyncEvaluator(pattern.expression, config) :
+      null;
 
     const leftJoinInner = (outerItem: Bindings, innerStream: AsyncIterator<Bindings>) => {
       const joinedStream = innerStream
         .transform({
           transform: async (innerItem: Bindings, nextInner: any, push) => {
             const joinedBindings = ActorRdfJoin.join(outerItem, innerItem);
-            if (!joinedBindings) { nextInner(); return; }
+            if (!joinedBindings) {
+              nextInner(); return;
+            }
             if (!evaluator) {
               push({ joinedBindings, result: true });
               nextInner();
@@ -67,7 +66,7 @@ export class ActorQueryOperationLeftJoinNestedLoop extends ActorQueryOperationTy
       // TODO: This will not work for larger streams.
       // The full inner stream is kept in memory.
       joinedStream.on('end', () => nextLeft());
-      joinedStream.on('data', async ({ joinedBindings, result }) => {
+      joinedStream.on('data', async({ joinedBindings, result }) => {
         if (result) {
           push(joinedBindings);
         }
@@ -78,11 +77,11 @@ export class ActorQueryOperationLeftJoinNestedLoop extends ActorQueryOperationTy
     const bindingsStream = left.bindingsStream
       .transform<Bindings>({ optional: true, transform });
 
-    const variables = ActorRdfJoin.joinVariables({ entries: [left, right] });
-    const metadata = () => Promise.all([left, right].map(getMetadata))
-      .then((metadatas) => metadatas.reduce((acc, val) => acc * val.totalItems, 1))
+    const variables = ActorRdfJoin.joinVariables({ entries: [ left, right ] });
+    const metadata = () => Promise.all([ left, right ].map(x => getMetadata(x)))
+      .then(metadatas => metadatas.reduce((acc, val) => acc * val.totalItems, 1))
       .catch(() => Infinity)
-      .then((totalItems) => ({ totalItems }));
+      .then(totalItems => ({ totalItems }));
 
     return { type: 'bindings', bindingsStream, metadata, variables };
   }

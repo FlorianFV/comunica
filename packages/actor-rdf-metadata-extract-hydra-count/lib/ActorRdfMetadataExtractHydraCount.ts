@@ -1,13 +1,12 @@
-import {ActorRdfMetadataExtract, IActionRdfMetadataExtract,
-  IActorRdfMetadataExtractOutput} from "@comunica/bus-rdf-metadata-extract";
-import {IActorArgs, IActorTest} from "@comunica/core";
+import { ActorRdfMetadataExtract, IActionRdfMetadataExtract,
+  IActorRdfMetadataExtractOutput } from '@comunica/bus-rdf-metadata-extract';
+import { IActorArgs, IActorTest } from '@comunica/core';
 
 /**
  * An RDF Metadata Extract Actor that extracts total items counts from a metadata stream based on the given predicates.
  */
 export class ActorRdfMetadataExtractHydraCount extends ActorRdfMetadataExtract
   implements IActorRdfParseFixedMediaTypesArgs {
-
   public readonly predicates: string[];
 
   constructor(args: IActorRdfParseFixedMediaTypesArgs) {
@@ -24,9 +23,9 @@ export class ActorRdfMetadataExtractHydraCount extends ActorRdfMetadataExtract
       action.metadata.on('error', reject);
 
       // Immediately resolve when a value has been found.
-      action.metadata.on('data', (quad) => {
-        if (this.predicates.indexOf(quad.predicate.value) >= 0) {
-          resolve({ metadata: { totalItems: parseInt(quad.object.value, 10) }});
+      action.metadata.on('data', quad => {
+        if (this.predicates.includes(quad.predicate.value)) {
+          resolve({ metadata: { totalItems: parseInt(quad.object.value, 10) } });
         }
       });
 
@@ -36,7 +35,6 @@ export class ActorRdfMetadataExtractHydraCount extends ActorRdfMetadataExtract
       });
     });
   }
-
 }
 
 export interface IActorRdfParseFixedMediaTypesArgs

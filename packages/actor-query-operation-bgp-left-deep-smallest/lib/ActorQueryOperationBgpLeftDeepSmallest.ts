@@ -23,7 +23,6 @@ import {Algebra} from "sparqlalgebrajs";
  * based on the pattern with the smallest item count.
  */
 export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationTypedMediated<Algebra.Bgp> {
-
   constructor(args: IActorQueryOperationTypedMediatedArgs) {
     super(args, 'bgp');
   }
@@ -62,7 +61,7 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
    */
   public static getCombinedVariables(patternOutputs: IActorQueryOperationOutputBindings[]): string[] {
     return require('lodash.uniq')((<string[]> []).concat.apply([],
-      patternOutputs.map((patternOutput) => patternOutput.variables)));
+      patternOutputs.map(patternOutput => patternOutput.variables)));
   }
 
   /**
@@ -71,10 +70,9 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
    * @return {number} The index of the pattern with the smallest number of elements.
    */
   public static getSmallestPatternId(metadatas: ({[id: string]: any} | undefined)[]) {
-    let smallestId: number = -1;
-    let smallestCount: number = Infinity;
-    for (let i = 0; i < metadatas.length; i++) {
-      const meta: {[id: string]: any} | undefined = metadatas[i];
+    let smallestId = -1;
+    let smallestCount = Infinity;
+    for (const [ i, meta ] of metadatas.entries()) {
       const count: number = ActorQueryOperationBgpLeftDeepSmallest.getTotalItems(meta);
       if (count <= smallestCount) {
         smallestCount = count;
@@ -92,11 +90,12 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
    * @return {number} The estimated number of total items.
    */
   public static estimateCombinedTotalItems(smallestPattern: {[id: string]: any} | undefined,
-                                           otherPatterns: ({[id: string]: any} | undefined)[]): number {
+    otherPatterns: ({[id: string]: any} | undefined)[]): number {
     const smallestCount: number = ActorQueryOperationBgpLeftDeepSmallest.getTotalItems(smallestPattern);
     return otherPatterns
-      .map((otherPattern) => smallestCount * ActorQueryOperationBgpLeftDeepSmallest.getTotalItems(
-        otherPattern))
+      .map(otherPattern => smallestCount * ActorQueryOperationBgpLeftDeepSmallest.getTotalItems(
+        otherPattern,
+      ))
       .reduce((sum, element) => sum + element, 0);
   }
 
@@ -106,7 +105,7 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
    * @return {number} The estimated number of items, or `Infinity` if metadata is falsy.
    */
   public static getTotalItems(metadata?: {[id: string]: any}): number {
-    const totalItems: number = (metadata || {}).totalItems;
+    const { totalItems } = metadata || {};
     return totalItems || totalItems === 0 ? totalItems : Infinity;
   }
 
@@ -117,9 +116,10 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
    * @return { pattern: Algebra.Pattern, bindings: IPatternBindings }[] An array of patterns with their bindings.
    */
   public static materializePatterns(patterns: Algebra.Pattern[], bindings: Bindings):
-      { pattern: Algebra.Pattern, bindings: IPatternBindings }[] {
-    return patterns.map((pattern) => ActorQueryOperationBgpLeftDeepSmallest.materializePattern(
-      pattern, bindings));
+  { pattern: Algebra.Pattern; bindings: IPatternBindings }[] {
+    return patterns.map(pattern => ActorQueryOperationBgpLeftDeepSmallest.materializePattern(
+      pattern, bindings,
+    ));
   }
 
   /**
@@ -129,7 +129,7 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
    * @return { pattern: Algebra.Pattern, bindings: IPatternBindings } A new materialized pattern.
    */
   public static materializePattern(pattern: Algebra.Pattern, bindings: Bindings):
-      { pattern: Algebra.Pattern, bindings: IPatternBindings } {
+  { pattern: Algebra.Pattern; bindings: IPatternBindings } {
     const bindingsOut: IPatternBindings = {};
     const patternOut = <Algebra.Pattern> Object.assign(mapTerms(pattern,
       (term: RDF.Term, termPosition: QuadTermName) => {
@@ -139,7 +139,7 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
         }
         return materializedTerm;
       }),
-      { type: 'pattern', context: pattern.context });
+    { type: 'pattern', context: pattern.context });
     return { pattern: patternOut, bindings: bindingsOut };
   }
 
@@ -184,17 +184,17 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
 
   public async testOperation(pattern: Algebra.Bgp, context: ActionContext): Promise<IActorTest> {
     if (pattern.patterns.length < 2) {
-      throw new Error('Actor ' + this.name + ' can only operate on BGPs with at least two patterns.');
+      throw new Error(`Actor ${this.name} can only operate on BGPs with at least two patterns.`);
     }
     return true;
   }
 
-  public async runOperation(pattern: Algebra.Bgp, context: ActionContext)
-  : Promise<IActorQueryOperationOutputBindings> {
+  public async runOperation(pattern: Algebra.Bgp, context: ActionContext): Promise<IActorQueryOperationOutputBindings> {
     // Get the total number of items for all patterns by resolving the quad patterns
     const patternOutputs: IActorQueryOperationOutputBindings[] = (await Promise.all(pattern.patterns
       .map((subPattern: Algebra.Pattern) => this.mediatorQueryOperation.mediate(
-        { operation: subPattern, context }))))
+        { operation: subPattern, context },
+      ))))
       .map(ActorQueryOperation.getSafeBindings);
 
     // If a triple pattern has no matches, the entire graph pattern has no matches.
@@ -209,16 +209,16 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
 
     // Find the pattern with the smallest number of elements
     const metadatas: {[id: string]: any}[] = await Promise.all(patternOutputs.map(
-      async (patternOutput) => patternOutput.metadata ? await patternOutput.metadata() : {}));
+      async patternOutput => patternOutput.metadata ? await patternOutput.metadata() : {},
+    ));
     const smallestId: number = ActorQueryOperationBgpLeftDeepSmallest.getSmallestPatternId(metadatas);
 
-    this.logDebug(context, 'Smallest pattern: ',
-      { pattern: pattern.patterns[smallestId], metadata: metadatas[smallestId] });
+    this.logDebug(context, 'Smallest pattern: ', { pattern: pattern.patterns[smallestId], metadata: metadatas[smallestId] });
 
     // Close the non-smallest streams
-    for (let i: number = 0; i < patternOutputs.length; i++) {
+    for (const [ i, element ] of patternOutputs.entries()) {
       if (i !== smallestId) {
-        patternOutputs[i].bindingsStream.close();
+        element.bindingsStream.close();
       }
     }
 
@@ -237,14 +237,15 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
       .set(KEY_CONTEXT_BGP_CURRENTMETADATA, metadatas[smallestId])
       .set(KEY_CONTEXT_BGP_PARENTMETADATA, remainingMetadatas);
     const bindingsStream: BindingsStream = ActorQueryOperationBgpLeftDeepSmallest.createLeftDeepStream(
-      smallestPattern.bindingsStream, remainingPatterns,
-      async (patterns: { pattern: Algebra.Pattern, bindings: IPatternBindings }[]) => {
+      smallestPattern.bindingsStream, remainingPatterns, async(patterns: { pattern: Algebra.Pattern; bindings: IPatternBindings }[]) => {
         // Send the materialized patterns to the mediator for recursive BGP evaluation.
-        const operation: Algebra.Bgp = { type: 'bgp', patterns: patterns.map((p) => p.pattern) };
-        const bindings = patterns.map((p) => p.bindings);
+        const operation: Algebra.Bgp = { type: 'bgp', patterns: patterns.map(p => p.pattern) };
+        const bindings = patterns.map(p => p.bindings);
         return ActorQueryOperation.getSafeBindings(await this.mediatorQueryOperation.mediate(
-          { operation, context: subContext.set(KEY_CONTEXT_BGP_PATTERNBINDINGS, bindings) })).bindingsStream;
-      });
+          { operation, context: subContext.set(KEY_CONTEXT_BGP_PATTERNBINDINGS, bindings) },
+        )).bindingsStream;
+      },
+    );
 
     // Prepare variables and metadata
     const variables: string[] = ActorQueryOperationBgpLeftDeepSmallest.getCombinedVariables(patternOutputs);
@@ -255,5 +256,4 @@ export class ActorQueryOperationBgpLeftDeepSmallest extends ActorQueryOperationT
 
     return { type: 'bindings', bindingsStream, variables, metadata };
   }
-
 }

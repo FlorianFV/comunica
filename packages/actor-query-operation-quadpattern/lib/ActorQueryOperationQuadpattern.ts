@@ -1,4 +1,4 @@
-import {ActorQueryOperationTyped, Bindings, BindingsStream,
+import { ActorQueryOperationTyped, Bindings, BindingsStream,
   IActionQueryOperation, IActorQueryOperationOutput,
   IActorQueryOperationOutputBindings} from "@comunica/bus-query-operation";
 import {IActionRdfResolveQuadPattern, IActorRdfResolveQuadPatternOutput} from "@comunica/bus-rdf-resolve-quad-pattern";
@@ -14,9 +14,8 @@ import {Algebra} from "sparqlalgebrajs";
  */
 export class ActorQueryOperationQuadpattern extends ActorQueryOperationTyped<Algebra.Pattern>
   implements IActorQueryOperationQuadpatternArgs {
-
   public readonly mediatorResolveQuadPattern: Mediator<Actor<IActionRdfResolveQuadPattern, IActorTest,
-    IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>;
+  IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>;
 
   constructor(args: IActorQueryOperationQuadpatternArgs) {
     super(args, 'pattern');
@@ -40,7 +39,7 @@ export class ActorQueryOperationQuadpattern extends ActorQueryOperationTyped<Alg
   public static getVariables(pattern: RDF.BaseQuad): string[] {
     return uniqTerms(getTerms(pattern)
       .filter(ActorQueryOperationQuadpattern.isTermVariable))
-      .map(termToString);
+      .map(x => termToString(x));
   }
 
   /**
@@ -95,8 +94,7 @@ export class ActorQueryOperationQuadpattern extends ActorQueryOperationTyped<Alg
     return true;
   }
 
-  public async runOperation(pattern: Algebra.Pattern, context: ActionContext)
-  : Promise<IActorQueryOperationOutputBindings> {
+  public async runOperation(pattern: Algebra.Pattern, context: ActionContext): Promise<IActorQueryOperationOutputBindings> {
     // Apply the (optional) pattern-specific context
     if (pattern.context) {
       context = context ? context.merge(pattern.context) : pattern.context;
@@ -115,7 +113,8 @@ export class ActorQueryOperationQuadpattern extends ActorQueryOperationTyped<Alg
           acc[key] = termToString(term);
         }
         return acc;
-      }, {});
+      },
+      {});
     const quadBindingsReducer = (acc: {[key: string]: RDF.Term}, term: RDF.Term, key: QuadTermName) => {
       const variable: string = elementVariables[key];
       if (variable) {
@@ -136,10 +135,10 @@ export class ActorQueryOperationQuadpattern extends ActorQueryOperationTyped<Alg
       // make sure that we filter out the triples that don't have equal values for those triple elements,
       // as QPF ignores variable names.
       if (duplicateElementLinks) {
-        filteredOutput = filteredOutput.filter((quad) => {
+        filteredOutput = filteredOutput.filter(quad => {
           // No need to check the graph, because an equal element already would have to be found in s, p, or o.
           for (const element1 of TRIPLE_TERM_NAMES) {
-            for (const element2 of (duplicateElementLinks[element1] || [])) {
+            for (const element2 of duplicateElementLinks[element1] || []) {
               if (!(<any> quad)[element1].equals((<any> quad)[element2])) {
                 return false;
               }
@@ -156,11 +155,10 @@ export class ActorQueryOperationQuadpattern extends ActorQueryOperationTyped<Alg
 
     return { type: 'bindings', bindingsStream, variables, metadata: result.metadata };
   }
-
 }
 
 export interface IActorQueryOperationQuadpatternArgs extends
   IActorArgs<IActionQueryOperation, IActorTest, IActorQueryOperationOutput> {
   mediatorResolveQuadPattern: Mediator<Actor<IActionRdfResolveQuadPattern, IActorTest,
-    IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>;
+  IActorRdfResolveQuadPatternOutput>, IActionRdfResolveQuadPattern, IActorTest, IActorRdfResolveQuadPatternOutput>;
 }

@@ -1,7 +1,7 @@
 export * from './lib/ActorInitSparql-browser';
-export {bindingsStreamToGraphQl} from "@comunica/actor-sparql-serialize-tree";
+export { bindingsStreamToGraphQl } from '@comunica/actor-sparql-serialize-tree';
 
-import {ActorInitSparql} from './lib/ActorInitSparql-browser';
+import { ActorInitSparql } from './lib/ActorInitSparql-browser';
 
 /**
  * Create a new comunica engine from the default config.

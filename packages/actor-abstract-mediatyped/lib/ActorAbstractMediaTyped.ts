@@ -1,4 +1,4 @@
-import {ActionContext, Actor, IAction, IActorArgs, IActorOutput, IActorTest} from "@comunica/core";
+import { ActionContext, Actor, IAction, IActorArgs, IActorOutput, IActorTest } from '@comunica/core';
 
 /**
  * An abstract actor that handles media-typed actions.
@@ -13,7 +13,6 @@ import {ActionContext, Actor, IAction, IActorArgs, IActorOutput, IActorTest} fro
  */
 export abstract class ActorAbstractMediaTyped<HI, HT, HO>
   extends Actor<IActionAbstractMediaTyped<HI>, IActorTestAbstractMediaTyped<HT>, IActorOutputAbstractMediaTyped<HO>> {
-
   constructor(args: IActorArgsMediaTyped<HI, HT, HO>) {
     super(args);
   }
@@ -22,26 +21,24 @@ export abstract class ActorAbstractMediaTyped<HI, HT, HO>
     if ('handle' in action) {
       const typedAction: IActionAbstractMediaTypedHandle<HI> = <IActionAbstractMediaTypedHandle<HI>> action;
       return { handle: await this.runHandle(typedAction.handle, typedAction.handleMediaType, action.context) };
-    } else if ('mediaTypes' in action) {
+    } if ('mediaTypes' in action) {
       return { mediaTypes: await this.getMediaTypes(action.context) };
-    } else if ('mediaTypeFormats' in action) {
+    } if ('mediaTypeFormats' in action) {
       return { mediaTypeFormats: await this.getMediaTypeFormats(action.context) };
-    } else {
-      throw new Error('Either a handle, mediaTypes or mediaTypeFormats action needs to be provided');
     }
+    throw new Error('Either a handle, mediaTypes or mediaTypeFormats action needs to be provided');
   }
 
   public async test(action: IActionAbstractMediaTyped<HI>): Promise<IActorTestAbstractMediaTyped<HT>> {
     if ('handle' in action) {
       const typedAction: IActionAbstractMediaTypedHandle<HI> = <IActionAbstractMediaTypedHandle<HI>> action;
       return { handle: await this.testHandle(typedAction.handle, typedAction.handleMediaType, action.context) };
-    } else if ('mediaTypes' in action) {
+    } if ('mediaTypes' in action) {
       return { mediaTypes: await this.testMediaType(action.context) };
-    } else if ('mediaTypeFormats' in action) {
+    } if ('mediaTypeFormats' in action) {
       return { mediaTypeFormats: await this.testMediaTypeFormats(action.context) };
-    } else {
-      throw new Error('Either a handle, mediaTypes or mediaTypeFormats action needs to be provided');
     }
+    throw new Error('Either a handle, mediaTypes or mediaTypeFormats action needs to be provided');
   }
 
   /**
@@ -96,14 +93,13 @@ export abstract class ActorAbstractMediaTyped<HI, HT, HO>
    * @return {Promise<{[id: string]: string}>} A promise that resolves to the media types.
    */
   public abstract getMediaTypeFormats(context?: ActionContext): Promise<{[id: string]: string}>;
-
 }
 
 export interface IActorArgsMediaTyped<HI, HT, HO> extends IActorArgs<IActionAbstractMediaTyped<HI>,
-  IActorTestAbstractMediaTyped<HT>, IActorOutputAbstractMediaTyped<HO>> {}
+IActorTestAbstractMediaTyped<HT>, IActorOutputAbstractMediaTyped<HO>> {}
 
 export type IActionAbstractMediaTyped<HI> = IActionAbstractMediaTypedHandle<HI> | IActionAbstractMediaTypedMediaTypes
-  | IActionAbstractMediaTypedMediaTypeFormats;
+| IActionAbstractMediaTypedMediaTypeFormats;
 export interface IActionAbstractMediaTypedHandle<HI> extends IAction {
   /**
    * The handle action input.
@@ -134,7 +130,7 @@ export interface IActionAbstractMediaTypedMediaTypeFormats extends IAction {
  * Groups may not be truthy at the same time.
  */
 export type IActorTestAbstractMediaTyped<HT> = IActorTestAbstractMediaTypedHandle<HT>
-  | IActorTestAbstractMediaTypedMediaTypes | IActorTestAbstractMediaTypedMediaTypeFormats;
+| IActorTestAbstractMediaTypedMediaTypes | IActorTestAbstractMediaTypedMediaTypeFormats;
 export interface IActorTestAbstractMediaTypedHandle<HT> extends IActorTest {
   /**
    * The handle test output.
@@ -159,7 +155,7 @@ export interface IActorTestAbstractMediaTypedMediaTypeFormats extends IActorTest
  * Groups may not be truthy at the same time.
  */
 export type IActorOutputAbstractMediaTyped<HO> = IActorOutputAbstractMediaTypedHandle<HO>
-  | IActorOutputAbstractMediaTypedMediaTypes | IActorOutputAbstractMediaTypedMediaTypeFormats;
+| IActorOutputAbstractMediaTypedMediaTypes | IActorOutputAbstractMediaTypedMediaTypeFormats;
 export interface IActorOutputAbstractMediaTypedHandle<HO> extends IActorOutput {
   /**
    * The handle action output.

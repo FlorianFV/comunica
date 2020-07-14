@@ -1,8 +1,8 @@
-import {ActorAbstractMediaTyped, IActionAbstractMediaTyped, IActorArgsMediaTyped,
-  IActorOutputAbstractMediaTyped, IActorTestAbstractMediaTyped} from "@comunica/actor-abstract-mediatyped";
-import {IAction, IActorOutput, IActorTest} from "@comunica/core";
-import * as RDF from "rdf-js";
-import {AsyncIterator} from "asynciterator";
+import { ActorAbstractMediaTyped, IActionAbstractMediaTyped, IActorArgsMediaTyped,
+  IActorOutputAbstractMediaTyped, IActorTestAbstractMediaTyped } from '@comunica/actor-abstract-mediatyped';
+import { IAction, IActorOutput, IActorTest } from '@comunica/core';
+import * as RDF from 'rdf-js';
+import { AsyncIterator } from 'asynciterator';
 
 /**
  * A comunica actor for RDF parse events.
@@ -17,11 +17,9 @@ import {AsyncIterator} from "asynciterator";
  */
 export abstract class ActorRdfSerialize extends
   ActorAbstractMediaTyped<IActionRdfSerialize, IActorTest, IActorRdfSerializeOutput> {
-
   constructor(args: IActorArgsMediaTyped<IActionRdfSerialize, IActorTest, IActorRdfSerializeOutput>) {
     super(args);
   }
-
 }
 
 export type IActionRootRdfSerialize = IActionAbstractMediaTyped<IActionRdfSerialize>;

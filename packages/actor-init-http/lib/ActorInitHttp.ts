@@ -1,7 +1,7 @@
-import {ActorHttp, IActionHttp, IActorHttpOutput} from "@comunica/bus-http";
-import {ActorInit, IActionInit, IActorOutputInit} from "@comunica/bus-init";
-import {Actor, IActorArgs, IActorTest, Mediator} from "@comunica/core";
-import {PassThrough} from "stream";
+import { ActorHttp, IActionHttp, IActorHttpOutput } from '@comunica/bus-http';
+import { ActorInit, IActionInit, IActorOutputInit } from '@comunica/bus-init';
+import { Actor, IActorArgs, IActorTest, Mediator } from '@comunica/core';
+import { PassThrough } from 'stream';
 
 /**
  * A http actor that listens on the 'init' bus.
@@ -9,9 +9,9 @@ import {PassThrough} from "stream";
  * It will call `this.mediatorHttp.mediate`.
  */
 export class ActorInitHttp extends ActorInit implements IActorInitHttpArgs {
-
   public readonly mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-    IActionHttp, IActorTest, IActorHttpOutput>;
+  IActionHttp, IActorTest, IActorHttpOutput>;
+
   public readonly url?: string;
   public readonly method?: string;
   public readonly headers?: string[];
@@ -37,7 +37,7 @@ export class ActorInitHttp extends ActorInit implements IActorInitHttpArgs {
       const headers: Headers = new Headers();
       for (const value of this.headers) {
         const i: number = value.indexOf(':');
-        headers.append(value.substr(0, i).toLowerCase(), value.substr(i + 2));
+        headers.append(value.slice(0, i).toLowerCase(), value.slice(i + 2));
       }
       (<RequestInit> http.init).headers = headers;
     }
@@ -54,12 +54,11 @@ export class ActorInitHttp extends ActorInit implements IActorInitHttpArgs {
     }
     return output;
   }
-
 }
 
 export interface IActorInitHttpArgs extends IActorArgs<IActionInit, IActorTest, IActorOutputInit> {
   mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-    IActionHttp, IActorTest, IActorHttpOutput>;
+  IActionHttp, IActorTest, IActorHttpOutput>;
   url?: string;
   method?: string;
   headers?: string[];

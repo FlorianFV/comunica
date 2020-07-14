@@ -1,8 +1,7 @@
-import {ActionContext} from "@comunica/core";
-import {ActorAbstractMediaTyped, IActorArgsMediaTyped} from "./ActorAbstractMediaTyped";
+import { ActionContext } from '@comunica/core';
+import { ActorAbstractMediaTyped, IActorArgsMediaTyped } from './ActorAbstractMediaTyped';
 
 export abstract class ActorAbstractMediaTypedFixed<HI, HT, HO> extends ActorAbstractMediaTyped<HI, HT, HO> {
-
   /**
    * A hash of media types, with media type name as key, and its priority as value.
    * Priorities are numbers between [0, 1].
@@ -29,7 +28,7 @@ export abstract class ActorAbstractMediaTypedFixed<HI, HT, HO> extends ActorAbst
 
   public async testHandle(action: HI, mediaType: string, context: ActionContext): Promise<HT> {
     if (!(mediaType in this.mediaTypes)) {
-      throw new Error('Unrecognized media type: ' + mediaType);
+      throw new Error(`Unrecognized media type: ${mediaType}`);
     }
     return await this.testHandleChecked(action, context);
   }
@@ -58,7 +57,6 @@ export abstract class ActorAbstractMediaTypedFixed<HI, HT, HO> extends ActorAbst
   public async getMediaTypeFormats(context: ActionContext): Promise<{[id: string]: string}> {
     return this.mediaTypeFormats;
   }
-
 }
 
 export interface IActorArgsMediaTypedFixed<HI, HT, HO> extends IActorArgsMediaTyped<HI, HT, HO> {

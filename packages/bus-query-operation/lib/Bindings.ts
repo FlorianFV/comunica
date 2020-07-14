@@ -1,8 +1,8 @@
-import {AsyncIterator} from "asynciterator";
-import {Map} from "immutable";
-import * as RDF from "rdf-js";
-import {Algebra, Factory, Util} from "sparqlalgebrajs";
-import {termToString} from "rdf-string";
+import { AsyncIterator } from 'asynciterator';
+import { Map } from 'immutable';
+import * as RDF from 'rdf-js';
+import { Algebra, Factory, Util } from 'sparqlalgebrajs';
+import { termToString } from 'rdf-string';
 
 /**
  * A stream of bindings.
@@ -63,9 +63,9 @@ export function ensureBindings(maybeBindings: any): Bindings {
  * @return Algebra.Operation A new operation materialized with the given bindings.
  */
 export function materializeOperation(operation: Algebra.Operation, bindings: Bindings,
-                                     strictTargetVariables: boolean = false): Algebra.Operation {
+  strictTargetVariables = false): Algebra.Operation {
   return Util.mapOperation(operation, {
-    path: (op: Algebra.Path, factory: Factory) => {
+    path(op: Algebra.Path, factory: Factory) {
       // Materialize variables in a path expression.
       // The predicate expression will be recursed.
       return {
@@ -78,7 +78,7 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
         ),
       };
     },
-    pattern: (op: Algebra.Pattern, factory: Factory) => {
+    pattern(op: Algebra.Pattern, factory: Factory) {
       // Materialize variables in the quad pattern.
       return {
         recurse: false,
@@ -90,7 +90,7 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
         ),
       };
     },
-    extend: (op: Algebra.Extend) => {
+    extend(op: Algebra.Extend) {
       // Materialize an extend operation.
       // If strictTargetVariables is true, we throw if the extension target variable is attempted to be bound.
       // Otherwise, we remove the extend operation.
@@ -101,7 +101,7 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
           return {
             recurse: true,
             result: materializeOperation(op.input, bindings, strictTargetVariables),
-          }
+          };
         }
       }
       return {
@@ -109,7 +109,7 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
         result: op,
       };
     },
-    group: (op: Algebra.Group, factory: Factory) => {
+    group(op: Algebra.Group, factory: Factory) {
       // Materialize a group operation.
       // If strictTargetVariables is true, we throw if the group target variable is attempted to be bound.
       // Otherwise, we just filter out the bound variables.
@@ -123,19 +123,18 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
           recurse: true,
           result: op,
         };
-      } else {
-        const variables = op.variables.filter((variable) => !bindings.has(termToString(variable)));
-        return {
-          recurse: true,
-          result: factory.createGroup(
-            op.input,
-            variables,
-            op.aggregates,
-          ),
-        };
       }
+      const variables = op.variables.filter(variable => !bindings.has(termToString(variable)));
+      return {
+        recurse: true,
+        result: factory.createGroup(
+          op.input,
+          variables,
+          op.aggregates,
+        ),
+      };
     },
-    project: (op: Algebra.Project, factory: Factory) => {
+    project(op: Algebra.Project, factory: Factory) {
       // Materialize a project operation.
       // If strictTargetVariables is true, we throw if the project target variable is attempted to be bound.
       // Otherwise, we just filter out the bound variables.
@@ -149,18 +148,17 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
           recurse: true,
           result: op,
         };
-      } else {
-        const variables = op.variables.filter((variable) => !bindings.has(termToString(variable)));
-        return {
-          recurse: true,
-          result: factory.createProject(
-            op.input,
-            variables,
-          ),
-        };
       }
+      const variables = op.variables.filter(variable => !bindings.has(termToString(variable)));
+      return {
+        recurse: true,
+        result: factory.createProject(
+          op.input,
+          variables,
+        ),
+      };
     },
-    values: (op: Algebra.Values, factory: Factory) => {
+    values(op: Algebra.Values, factory: Factory) {
       // Materialize a values operation.
       // If strictTargetVariables is true, we throw if the values target variable is attempted to be bound.
       // Otherwise, we just filter out the bound variables and their bindings.
@@ -171,8 +169,8 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
           }
         }
       } else {
-        const variables = op.variables.filter((variable) => !bindings.has(termToString(variable)));
-        const valueBindings = op.bindings.map((binding) => {
+        const variables = op.variables.filter(variable => !bindings.has(termToString(variable)));
+        const valueBindings = op.bindings.map(binding => {
           const newBinding = { ...binding };
           bindings.forEach((value: RDF.NamedNode, key: string) => delete newBinding[key]);
           return newBinding;
@@ -190,17 +188,17 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
         result: op,
       };
     },
-    expression: (op: Algebra.Expression, factory: Factory) => {
+    expression(op: Algebra.Expression, factory: Factory) {
       if (op.expressionType === 'term') {
         // Materialize a term expression
         return {
           recurse: false,
           result: factory.createTermExpression(materializeTerm(op.term, bindings)),
-        }
+        };
       }
-      if (op.expressionType === 'aggregate'
-        && 'variable' in op
-        && bindings.has(termToString(<RDF.Variable> op.variable))) {
+      if (op.expressionType === 'aggregate' &&
+        'variable' in op &&
+        bindings.has(termToString(<RDF.Variable> op.variable))) {
         // Materialize a bound aggregate operation.
         // If strictTargetVariables is true, we throw if the expression target variable is attempted to be bound.
         // Otherwise, we ignore this operation.
@@ -210,14 +208,14 @@ export function materializeOperation(operation: Algebra.Operation, bindings: Bin
           return {
             recurse: true,
             result: op,
-          }
+          };
         }
       }
       return {
         recurse: true,
         result: op,
       };
-    }
+    },
   });
 }
 

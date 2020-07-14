@@ -1,13 +1,12 @@
-import {ActorRdfMetadataExtractQuery, IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput,
-  IActorRdfMetadataExtractQueryArgs} from "@comunica/bus-rdf-metadata-extract";
-import {IActorTest} from "@comunica/core";
-import * as GRAPHQLLD_CONTEXT from "./context.json";
+import { ActorRdfMetadataExtractQuery, IActionRdfMetadataExtract, IActorRdfMetadataExtractOutput,
+  IActorRdfMetadataExtractQueryArgs } from '@comunica/bus-rdf-metadata-extract';
+import { IActorTest } from '@comunica/core';
+import * as GRAPHQLLD_CONTEXT from './context.json';
 
 /**
  * A comunica Query-based Hydra Links RDF Metadata Extract Actor.
  */
 export class ActorRdfMetadataExtractHydraLinksQuery extends ActorRdfMetadataExtractQuery {
-
   public static readonly GRAPHQLLD_QUERY: string = `
     query($pageUrl: String) @single(scope: all) {
       graph
@@ -31,5 +30,4 @@ export class ActorRdfMetadataExtractHydraLinksQuery extends ActorRdfMetadataExtr
     delete metadata.graph;
     return { metadata };
   }
-
 }

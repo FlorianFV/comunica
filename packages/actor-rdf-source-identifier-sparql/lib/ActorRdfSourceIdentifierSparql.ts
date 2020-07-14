@@ -1,18 +1,17 @@
-import {IActionHttp, IActorHttpOutput} from "@comunica/bus-http";
+import { IActionHttp, IActorHttpOutput } from '@comunica/bus-http';
 import {
   ActorRdfSourceIdentifier, IActionRdfSourceIdentifier, IActorRdfSourceIdentifierArgs,
   IActorRdfSourceIdentifierOutput,
-} from "@comunica/bus-rdf-source-identifier";
-import {Actor, IActorArgs, IActorTest, Mediator} from "@comunica/core";
-import {IMediatorTypePriority} from "@comunica/mediatortype-priority";
+} from '@comunica/bus-rdf-source-identifier';
+import { Actor, IActorArgs, IActorTest, Mediator } from '@comunica/core';
+import { IMediatorTypePriority } from '@comunica/mediatortype-priority';
 
 /**
  * A comunica SPARQL RDF Source Identifier Actor.
  */
 export class ActorRdfSourceIdentifierSparql extends ActorRdfSourceIdentifier {
-
   public readonly mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-    IActionHttp, IActorTest, IActorHttpOutput>;
+  IActionHttp, IActorTest, IActorHttpOutput>;
 
   constructor(args: IActorRdfSourceIdentifierSparqlArgs) {
     super(args);
@@ -20,7 +19,7 @@ export class ActorRdfSourceIdentifierSparql extends ActorRdfSourceIdentifier {
 
   public async test(action: IActionRdfSourceIdentifier): Promise<IMediatorTypePriority> {
     const sourceUrl = this.getSourceUrl(action);
-    const url: string = sourceUrl + '?query=' + encodeURIComponent('ASK { ?s a ?o }');
+    const url = `${sourceUrl}?query=${encodeURIComponent('ASK { ?s a ?o }')}`;
     const headers: Headers = new Headers();
     headers.append('Accept', 'application/sparql-results+json');
     const httpAction: IActionHttp = { context: action.context, input: url, init: { headers, method: 'GET' } };
@@ -32,20 +31,19 @@ export class ActorRdfSourceIdentifierSparql extends ActorRdfSourceIdentifier {
     }
 
     const contentType = httpResponse.headers.get('Content-Type');
-    if (!httpResponse.ok || !contentType || contentType.indexOf('application/sparql-results+json') < 0) {
+    if (!httpResponse.ok || !contentType || !contentType.includes('application/sparql-results+json')) {
       throw new Error(`${sourceUrl} is not a SPARQL endpoint`);
     }
-    return { priority: this.priority};
+    return { priority: this.priority };
   }
 
   public async run(action: IActionRdfSourceIdentifier): Promise<IActorRdfSourceIdentifierOutput> {
     return { sourceType: 'sparql' };
   }
-
 }
 
 export interface IActorRdfSourceIdentifierSparqlArgs
   extends IActorRdfSourceIdentifierArgs {
   mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-    IActionHttp, IActorTest, IActorHttpOutput>;
+  IActionHttp, IActorTest, IActorHttpOutput>;
 }

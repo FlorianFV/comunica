@@ -19,7 +19,7 @@ export type BindingsHash = string;
 export interface IGroup {
   bindings: Bindings;
   aggregators: {
-    [key: string]: AggregateEvaluator,
+    [key: string]: AggregateEvaluator;
   };
 }
 
@@ -27,16 +27,16 @@ export interface IGroup {
  * A state manager for the groups constructed by consuming the bindings-stream.
  */
 export class GroupsState {
-  private groups: Map<BindingsHash, IGroup>;
-  private groupVariables: Set<string>;
-  private distinctHashes: null | Map<BindingsHash, Set<BindingsHash>>;
+  private readonly groups: Map<BindingsHash, IGroup>;
+  private readonly groupVariables: Set<string>;
+  private readonly distinctHashes: null | Map<BindingsHash, Set<BindingsHash>>;
 
-  constructor(private pattern: Algebra.Group, private sparqleeConfig: SyncEvaluatorConfig) {
+  constructor(private readonly pattern: Algebra.Group, private readonly sparqleeConfig: SyncEvaluatorConfig) {
     this.groups = new Map();
-    this.groupVariables = new Set(this.pattern.variables.map(termToString));
-    this.distinctHashes = pattern.aggregates.some(({ distinct }) => distinct)
-      ? new Map()
-      : null;
+    this.groupVariables = new Set(this.pattern.variables.map(x => termToString(x)));
+    this.distinctHashes = pattern.aggregates.some(({ distinct }) => distinct) ?
+      new Map() :
+      null;
   }
 
   /**
@@ -70,9 +70,8 @@ export class GroupsState {
 
       if (this.distinctHashes) {
         const bindingsHash = this.hashBindings(bindings);
-        this.distinctHashes.set(groupHash, new Set([bindingsHash]));
+        this.distinctHashes.set(groupHash, new Set([ bindingsHash ]));
       }
-
     } else {
       // Group already exists
       // Update all the aggregators with the input binding
@@ -101,7 +100,7 @@ export class GroupsState {
    */
   public collectResults(): Bindings[] {
     // Collect groups
-    let rows: Bindings[] = Array.from(this.groups, ([_, group]) => {
+    let rows: Bindings[] = [ ...this.groups ].map(([ _, group ]) => {
       const { bindings: groupBindings, aggregators } = group;
 
       // Collect aggregator bindings
@@ -131,7 +130,7 @@ export class GroupsState {
           single[key] = value;
         }
       }
-      rows = [Bindings(single)];
+      rows = [ Bindings(single) ];
     }
 
     return rows;

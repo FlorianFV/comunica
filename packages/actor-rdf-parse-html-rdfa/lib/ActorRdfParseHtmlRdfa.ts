@@ -1,12 +1,11 @@
-import {ActorRdfParseHtml, IActionRdfParseHtml, IActorRdfParseHtmlOutput} from "@comunica/bus-rdf-parse-html";
-import {IActorArgs, IActorTest} from "@comunica/core";
-import {RdfaParser} from "rdfa-streaming-parser";
+import { ActorRdfParseHtml, IActionRdfParseHtml, IActorRdfParseHtmlOutput } from '@comunica/bus-rdf-parse-html';
+import { IActorArgs, IActorTest } from '@comunica/core';
+import { RdfaParser } from 'rdfa-streaming-parser';
 
 /**
  * A comunica RDFa RDF Parse Html Actor.
  */
 export class ActorRdfParseHtmlRdfa extends ActorRdfParseHtml {
-
   constructor(args: IActorArgs<IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput>) {
     super(args);
   }
@@ -18,7 +17,7 @@ export class ActorRdfParseHtmlRdfa extends ActorRdfParseHtml {
   public async run(action: IActionRdfParseHtml): Promise<IActorRdfParseHtmlOutput> {
     const mediaType = action.headers ? action.headers.get('content-type') : null;
     const language = action.headers && action.headers.get('content-language') || undefined;
-    const profile = mediaType && mediaType.indexOf('xml') >= 0 ? 'xhtml' : 'html';
+    const profile = mediaType && mediaType.includes('xml') ? 'xhtml' : 'html';
 
     const htmlParseListener = new RdfaParser({ baseIRI: action.baseIRI, profile, language });
     htmlParseListener.on('error', action.error);
@@ -30,5 +29,4 @@ export class ActorRdfParseHtmlRdfa extends ActorRdfParseHtml {
     };
     return { htmlParseListener };
   }
-
 }

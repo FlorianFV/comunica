@@ -1,19 +1,19 @@
-import {IActionHandleRdfParse, IActorOutputHandleRdfParse, IActorTestHandleRdfParse} from "@comunica/bus-rdf-parse";
-import {IHtmlParseListener} from "@comunica/bus-rdf-parse-html";
-import {ActionContext, Actor, Mediator} from "@comunica/core";
-import * as RDF from "rdf-js";
-import {Readable} from "stream";
-import {resolve as resolveIri} from "relative-to-absolute-iri";
+import { IActionHandleRdfParse, IActorOutputHandleRdfParse, IActorTestHandleRdfParse } from '@comunica/bus-rdf-parse';
+import { IHtmlParseListener } from '@comunica/bus-rdf-parse-html';
+import { ActionContext, Actor, Mediator } from '@comunica/core';
+import * as RDF from 'rdf-js';
+import { Readable } from 'stream';
+import { resolve as resolveIri } from 'relative-to-absolute-iri';
 
 /**
  * An HTML parse listeners that detects <script> data blocks with known RDF media tyoes,
  * parses them, and outputs the resulting quads.
  */
 export class HtmlScriptListener implements IHtmlParseListener {
-
   private readonly mediatorRdfParseHandle: Mediator<
-    Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
-    IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>;
+  Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
+  IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>;
+
   private readonly cbQuad: (quad: RDF.Quad) => void;
   private readonly cbError: (error: Error) => void;
   private readonly cbEnd: () => void;
@@ -27,16 +27,16 @@ export class HtmlScriptListener implements IHtmlParseListener {
   private handleMediaType?: string;
   private textChunks?: string[];
   private textChunksJsonLd: string[] = [];
-  private endBarrier: number = 1;
-  private passedScripts: number = 0;
-  private isFinalJsonLdProcessing: boolean = false;
+  private endBarrier = 1;
+  private passedScripts = 0;
+  private isFinalJsonLdProcessing = false;
 
   constructor(mediatorRdfParseHandle: Mediator<
-                Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
-                IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
-              cbQuad: (quad: RDF.Quad) => void, cbError: (error: Error) => void, cbEnd: () => void,
-              supportedTypes: {[id: string]: number}, context: ActionContext | undefined, baseIRI: string,
-              headers: Headers | undefined) {
+  Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
+  IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
+  cbQuad: (quad: RDF.Quad) => void, cbError: (error: Error) => void, cbEnd: () => void,
+  supportedTypes: {[id: string]: number}, context: ActionContext | undefined, baseIRI: string,
+  headers: Headers | undefined) {
     this.mediatorRdfParseHandle = mediatorRdfParseHandle;
     this.cbQuad = cbQuad;
     this.cbError = cbError;
@@ -92,7 +92,7 @@ export class HtmlScriptListener implements IHtmlParseListener {
       } else {
         // Create a temporary text stream for pushing all the text chunks
         const textStream = new Readable({ objectMode: true });
-        textStream._read = () => { return; };
+        textStream._read = () => { };
         const textChunksLocal = <string[]> this.textChunks;
 
         // Send all collected text to parser
@@ -105,7 +105,7 @@ export class HtmlScriptListener implements IHtmlParseListener {
           .then(({ handle }) => {
             // Initialize text parsing
             handle.quads
-              .on('error', (error) => this.cbError(HtmlScriptListener.newErrorCoded(error.message, 'invalid script element')))
+              .on('error', error => this.cbError(HtmlScriptListener.newErrorCoded(error.message, 'invalid script element')))
               .on('data', this.cbQuad)
               .on('end', () => this.onEnd());
 
@@ -151,7 +151,8 @@ export class HtmlScriptListener implements IHtmlParseListener {
       } else if (this.targetScriptId) {
         this.cbError(HtmlScriptListener.newErrorCoded(
           `Targeted script "${this.targetScriptId}" does not have a supported type`,
-          'loading document failed'));
+          'loading document failed',
+        ));
       }
     } else {
       this.handleMediaType = undefined;
@@ -176,5 +177,4 @@ export class HtmlScriptListener implements IHtmlParseListener {
   public requiresCustomJsonLdHandling(mediaType: string) {
     return !this.onlyFirstScript && !this.targetScriptId && mediaType === 'application/ld+json';
   }
-
 }

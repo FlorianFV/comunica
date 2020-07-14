@@ -1,10 +1,9 @@
-import {LogLevelString, Stream} from "bunyan";
+import { LogLevelString, Stream } from 'bunyan';
 
 /**
  * BunyanStreamProvider is able to create bunyan streams.
  */
 export abstract class BunyanStreamProvider {
-
   public readonly name: string;
   public readonly level: LogLevelString;
 
@@ -13,7 +12,6 @@ export abstract class BunyanStreamProvider {
   }
 
   public abstract createStream(): Stream;
-
 }
 
 export interface IBunyanStreamProviderArgs {

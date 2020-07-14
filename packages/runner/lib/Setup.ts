@@ -1,6 +1,6 @@
-import {IActionInit, IActorOutputInit} from "@comunica/bus-init";
-import {Loader, LoaderProperties} from "componentsjs";
-import {Runner} from "./Runner";
+import { IActionInit, IActorOutputInit } from '@comunica/bus-init';
+import { Loader, LoaderProperties } from 'componentsjs';
+import { Runner } from './Runner';
 
 /**
  * Helper class to setup instances from a given comunica config file.
@@ -9,7 +9,6 @@ import {Runner} from "./Runner";
  * @link https://www.npmjs.com/package/lsd-components
  */
 export class Setup {
-
   private constructor() {
     throw new Error('The Setup class may not be constructed');
   }
@@ -25,7 +24,7 @@ export class Setup {
    * @return {Promise<any>}               A promise that resolves when the runner has been initialized.
    */
   public static async run(configResourceUrl: string, action: IActionInit, runnerUri?: string,
-                          properties?: ISetupProperties): Promise<any> {
+    properties?: ISetupProperties): Promise<any> {
     if (!runnerUri) {
       runnerUri = 'urn:comunica:my';
     }
@@ -35,9 +34,9 @@ export class Setup {
     let output: IActorOutputInit[];
     try {
       output = await runner.run(action);
-    } catch (e) {
+    } catch (error) {
       await runner.deinitialize();
-      throw e;
+      throw error;
     }
     await runner.deinitialize();
     return output;
@@ -52,7 +51,7 @@ export class Setup {
    * @return {Promise<any>}               A promise that resolves to the instance.
    */
   public static async instantiateComponent(configResourceUrl: string, instanceUri: string,
-                                           properties?: ISetupProperties): Promise<any> {
+    properties?: ISetupProperties): Promise<any> {
     // Handle optional arguments
     if (!properties) {
       properties = {};
@@ -64,7 +63,6 @@ export class Setup {
     await loader.registerAvailableModuleResources();
     return await loader.instantiateFromUrl(instanceUri, configResourceUrl);
   }
-
 }
 
 export type ISetupProperties = LoaderProperties;

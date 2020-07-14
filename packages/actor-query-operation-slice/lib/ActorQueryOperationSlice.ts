@@ -2,17 +2,16 @@ import {
   ActorQueryOperationTypedMediated,
   IActorQueryOperationOutputBindings, IActorQueryOperationOutputQuads,
   IActorQueryOperationOutputStream,
-  IActorQueryOperationTypedMediatedArgs
-} from "@comunica/bus-query-operation";
-import {ActionContext, IActorTest} from "@comunica/core";
-import {AsyncIterator} from "asynciterator";
-import {Algebra} from "sparqlalgebrajs";
+  IActorQueryOperationTypedMediatedArgs,
+} from '@comunica/bus-query-operation';
+import { ActionContext, IActorTest } from '@comunica/core';
+import { AsyncIterator } from 'asynciterator';
+import { Algebra } from 'sparqlalgebrajs';
 
 /**
  * A comunica Slice Query Operation Actor.
  */
 export class ActorQueryOperationSlice extends ActorQueryOperationTypedMediated<Algebra.Slice> {
-
   constructor(args: IActorQueryOperationTypedMediatedArgs) {
     super(args, 'slice');
   }
@@ -21,14 +20,13 @@ export class ActorQueryOperationSlice extends ActorQueryOperationTypedMediated<A
     return true;
   }
 
-  public async runOperation(pattern: Algebra.Slice, context: ActionContext)
-  : Promise<IActorQueryOperationOutputStream> {
+  public async runOperation(pattern: Algebra.Slice, context: ActionContext): Promise<IActorQueryOperationOutputStream> {
     // Resolve the input
     const output: IActorQueryOperationOutputStream = await this.mediatorQueryOperation.mediate({ operation: pattern.input, context });
 
     const metadata = this.sliceMetadata(output, pattern);
 
-    if  (output.type === 'bindings') {
+    if (output.type === 'bindings') {
       const bindingsOutput = <IActorQueryOperationOutputBindings> output;
       const bindingsStream = this.sliceStream(bindingsOutput.bindingsStream, pattern);
       return <IActorQueryOperationOutputBindings> { type: 'bindings', bindingsStream, metadata, variables: bindingsOutput.variables };
@@ -53,18 +51,17 @@ export class ActorQueryOperationSlice extends ActorQueryOperationTypedMediated<A
 
   // If we find metadata, apply slicing on the total number of items
   private sliceMetadata(output: IActorQueryOperationOutputStream, pattern: Algebra.Slice): (() => Promise<{[id: string]: any}>) | undefined {
-    const hasLength: boolean = !!pattern.length || pattern.length === 0;
+    const hasLength: boolean = Boolean(pattern.length) || pattern.length === 0;
     return !output.metadata ? undefined : () => (<() => Promise<{[id: string]: any}>> output.metadata)()
-      .then((subMetadata) => {
-        let totalItems: number = subMetadata.totalItems;
+      .then(subMetadata => {
+        let { totalItems } = subMetadata;
         if (isFinite(totalItems)) {
           totalItems = Math.max(0, totalItems - pattern.start);
           if (hasLength) {
             totalItems = Math.min(totalItems, <number> pattern.length);
           }
         }
-        return Object.assign({}, subMetadata, { totalItems });
+        return { ...subMetadata, totalItems };
       });
   }
-
 }

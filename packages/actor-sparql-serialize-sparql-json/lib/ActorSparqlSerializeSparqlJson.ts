@@ -1,16 +1,15 @@
-import {Bindings, IActorQueryOperationOutputBindings,
-  IActorQueryOperationOutputBoolean} from "@comunica/bus-query-operation";
-import {ActorSparqlSerializeFixedMediaTypes, IActionSparqlSerialize,
-  IActorSparqlSerializeFixedMediaTypesArgs, IActorSparqlSerializeOutput} from "@comunica/bus-sparql-serialize";
-import {ActionContext} from "@comunica/core";
-import * as RDF from "rdf-js";
-import {Readable} from "stream";
+import { Bindings, IActorQueryOperationOutputBindings,
+  IActorQueryOperationOutputBoolean } from '@comunica/bus-query-operation';
+import { ActorSparqlSerializeFixedMediaTypes, IActionSparqlSerialize,
+  IActorSparqlSerializeFixedMediaTypesArgs, IActorSparqlSerializeOutput } from '@comunica/bus-sparql-serialize';
+import { ActionContext } from '@comunica/core';
+import * as RDF from 'rdf-js';
+import { Readable } from 'stream';
 
 /**
  * A comunica sparql-results+xml Serialize Actor.
  */
 export class ActorSparqlSerializeSparqlJson extends ActorSparqlSerializeFixedMediaTypes {
-
   constructor(args: IActorSparqlSerializeFixedMediaTypesArgs) {
     super(args);
   }
@@ -22,44 +21,42 @@ export class ActorSparqlSerializeSparqlJson extends ActorSparqlSerializeFixedMed
    */
   public static bindingToJsonBindings(value: RDF.Term): any {
     if (value.termType === 'Literal') {
-      const literal: RDF.Literal = <RDF.Literal> value;
+      const literal: RDF.Literal = value;
       const jsonValue: any = { value: literal.value, type: 'literal' };
-      const language: string = literal.language;
-      const datatype: RDF.NamedNode = literal.datatype;
+      const { language } = literal;
+      const { datatype } = literal;
       if (language) {
         jsonValue['xml:lang'] = language;
       } else if (datatype && datatype.value !== 'http://www.w3.org/2001/XMLSchema#string') {
         jsonValue.datatype = datatype.value;
       }
       return jsonValue;
-    } else if (value.termType === 'BlankNode') {
+    } if (value.termType === 'BlankNode') {
       return { value: value.value, type: 'bnode' };
-    } else {
-      return { value: value.value, type: 'uri' };
     }
+    return { value: value.value, type: 'uri' };
   }
 
   public async testHandleChecked(action: IActionSparqlSerialize, context: ActionContext) {
-    if (['bindings', 'boolean'].indexOf(action.type) < 0) {
+    if (![ 'bindings', 'boolean' ].includes(action.type)) {
       throw new Error('This actor can only handle bindings streams or booleans.');
     }
     return true;
   }
 
-  public async runHandle(action: IActionSparqlSerialize, mediaType?: string, context?: ActionContext)
-    : Promise<IActorSparqlSerializeOutput> {
+  public async runHandle(action: IActionSparqlSerialize, mediaType?: string, context?: ActionContext): Promise<IActorSparqlSerializeOutput> {
     const data = new Readable();
     data._read = () => {
-      return;
+
     };
 
     // Write head
     const head: any = {};
     if (action.type === 'bindings' && (<IActorQueryOperationOutputBindings> action).variables.length) {
-      head.vars = (<IActorQueryOperationOutputBindings> action).variables.map((v: string) => v.substr(1));
+      head.vars = (<IActorQueryOperationOutputBindings> action).variables.map((v: string) => v.slice(1));
     }
-    data.push('{"head": ' + JSON.stringify(head) + ',\n');
-    let empty: boolean = true;
+    data.push(`{"head": ${JSON.stringify(head)},\n`);
+    let empty = true;
 
     if (action.type === 'bindings') {
       const resultStream: NodeJS.EventEmitter = (<IActorQueryOperationOutputBindings> action).bindingsStream;
@@ -76,10 +73,10 @@ export class ActorSparqlSerializeSparqlJson extends ActorSparqlSerializeFixedMed
         }
 
         // JSON SPARQL results spec does not allow unbound variables and blank node bindings
-        const realBindings: Bindings = <any> bindings.filter((v: RDF.Term, k: string) => !!v && k.startsWith('?'));
+        const realBindings: Bindings = <any> bindings.filter((v: RDF.Term, k: string) => Boolean(v) && k.startsWith('?'));
 
-        data.push(JSON.stringify((<any> realBindings.mapEntries(([key, value]: [string, RDF.Term]) =>
-          [key.substr(1), ActorSparqlSerializeSparqlJson.bindingToJsonBindings(value)]))
+        data.push(JSON.stringify((<any> realBindings.mapEntries(([ key, value ]: [string, RDF.Term]) =>
+          [ key.slice(1), ActorSparqlSerializeSparqlJson.bindingToJsonBindings(value) ]))
           .toJSON()));
         empty = false;
       });
@@ -95,7 +92,7 @@ export class ActorSparqlSerializeSparqlJson extends ActorSparqlSerializeFixedMed
       });
     } else {
       try {
-        data.push('"boolean":' + await (<IActorQueryOperationOutputBoolean> action).booleanResult + '\n}\n');
+        data.push(`"boolean":${await (<IActorQueryOperationOutputBoolean> action).booleanResult}\n}\n`);
         data.push(null);
       } catch (e) {
         data.once('newListener', () => data.emit('error', e));
@@ -104,5 +101,4 @@ export class ActorSparqlSerializeSparqlJson extends ActorSparqlSerializeFixedMed
 
     return { data };
   }
-
 }

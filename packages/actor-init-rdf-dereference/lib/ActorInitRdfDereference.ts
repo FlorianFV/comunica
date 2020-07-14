@@ -1,9 +1,9 @@
-import {ActorInit, IActionInit, IActorOutputInit} from "@comunica/bus-init";
-import {IActionRdfDereference, IActorRdfDereferenceOutput} from "@comunica/bus-rdf-dereference";
-import {IActorRdfParseOutput} from "@comunica/bus-rdf-parse";
-import {Actor, IActorArgs, IActorTest, Mediator} from "@comunica/core";
-import * as RdfString from "rdf-string";
-import {Readable} from "stream";
+import { ActorInit, IActionInit, IActorOutputInit } from '@comunica/bus-init';
+import { IActionRdfDereference, IActorRdfDereferenceOutput } from '@comunica/bus-rdf-dereference';
+import { IActorRdfParseOutput } from '@comunica/bus-rdf-parse';
+import { Actor, IActorArgs, IActorTest, Mediator } from '@comunica/core';
+import * as RdfString from 'rdf-string';
+import { Readable } from 'stream';
 
 /**
  * An RDF Parse actor that listens on the 'init' bus.
@@ -12,9 +12,9 @@ import {Readable} from "stream";
  * and a mediaType that identifies the RDF serialization.
  */
 export class ActorInitRdfDereference extends ActorInit implements IActorInitRdfParseArgs {
-
   public readonly mediatorRdfDereference: Mediator<Actor<IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>,
-    IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>;
+  IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>;
+
   public readonly url?: string;
 
   constructor(args: IActorInitRdfParseArgs) {
@@ -37,18 +37,17 @@ export class ActorInitRdfDereference extends ActorInit implements IActorInitRdfP
 
     const readable = new Readable();
     readable._read = () => {
-      return;
+
     };
-    result.quads.on('data', (quad) => readable.push(JSON.stringify(RdfString.quadToStringQuad(quad)) + '\n'));
+    result.quads.on('data', quad => readable.push(`${JSON.stringify(RdfString.quadToStringQuad(quad))}\n`));
     result.quads.on('end', () => readable.push(null));
 
     return { stdout: readable };
   }
-
 }
 
 export interface IActorInitRdfParseArgs extends IActorArgs<IActionInit, IActorTest, IActorOutputInit> {
   mediatorRdfDereference: Mediator<Actor<IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>,
-    IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>;
+  IActionRdfDereference, IActorTest, IActorRdfDereferenceOutput>;
   url?: string;
 }

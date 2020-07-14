@@ -1,6 +1,6 @@
-import {Actor, IAction, IActorOutput, IActorTest} from "@comunica/core";
-import {IActorArgs} from "@comunica/core";
-import {Readable} from "stream";
+import { Actor, IAction, IActorOutput, IActorTest } from '@comunica/core';
+import { IActorArgs } from '@comunica/core';
+import { Readable } from 'stream';
 
 /**
  * A base actor for listening to init events.
@@ -15,11 +15,9 @@ import {Readable} from "stream";
  * @see IActionInit
  */
 export abstract class ActorInit extends Actor<IActionInit, IActorTest, IActorOutputInit> {
-
   constructor(args: IActorArgs<IActionInit, IActorTest, IActorOutputInit>) {
     super(args);
   }
-
 }
 
 /**

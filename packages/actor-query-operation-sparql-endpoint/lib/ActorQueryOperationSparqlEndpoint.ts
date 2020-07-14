@@ -1,4 +1,4 @@
-import {IActionHttp, IActorHttpOutput} from "@comunica/bus-http";
+import { IActionHttp, IActorHttpOutput } from '@comunica/bus-http';
 import {
   ActorQueryOperation,
   Bindings,
@@ -23,11 +23,11 @@ import EventEmitter = NodeJS.EventEmitter;
  * A comunica SPARQL Endpoint Query Operation Actor.
  */
 export class ActorQueryOperationSparqlEndpoint extends ActorQueryOperation {
-
   protected static readonly FACTORY: Factory = new Factory();
 
   public readonly mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-    IActionHttp, IActorTest, IActorHttpOutput>;
+  IActionHttp, IActorTest, IActorHttpOutput>;
+
   public readonly endpointFetcher: SparqlEndpointFetcher;
 
   protected lastContext?: ActionContext;
@@ -36,7 +36,8 @@ export class ActorQueryOperationSparqlEndpoint extends ActorQueryOperation {
     super(args);
     this.endpointFetcher = new SparqlEndpointFetcher({
       fetch: (input: Request | string, init?: RequestInit) => this.mediatorHttp.mediate(
-        { input, init, context: this.lastContext }),
+        { input, init, context: this.lastContext },
+      ),
       prefixVariableQuestionMark: true,
     });
   }
@@ -49,7 +50,7 @@ export class ActorQueryOperationSparqlEndpoint extends ActorQueryOperation {
     if (source && getDataSourceType(source) === 'sparql') {
       return { httpRequests: 1 };
     }
-    throw new Error(this.name + ' requires a single source with a \'sparql\' endpoint to be present in the context.');
+    throw new Error(`${this.name} requires a single source with a 'sparql' endpoint to be present in the context.`);
   }
 
   public async run(action: IActionQueryOperation): Promise<IActorQueryOperationOutput> {
@@ -69,7 +70,7 @@ export class ActorQueryOperationSparqlEndpoint extends ActorQueryOperation {
       query = toSparql(action.operation);
       // This will throw an error in case the result is an invalid SPARQL query
       type = this.endpointFetcher.getQueryType(query);
-    } catch (e) {
+    } catch (error) {
       // Ignore errors
     }
     // If the input is an sub-query, wrap this in a SELECT
@@ -81,17 +82,18 @@ export class ActorQueryOperationSparqlEndpoint extends ActorQueryOperation {
 
     // Execute the query against the endpoint depending on the type
     switch (type) {
-    case 'SELECT':
-      if (!variables)
-        variables = Util.inScopeVariables(action.operation);
-      return this.executeQuery(endpoint, <string> query, false, variables);
-    case 'CONSTRUCT':
-      return this.executeQuery(endpoint, <string> query, true);
-    case 'ASK':
-      return <IActorQueryOperationOutputBoolean>{
-        type: 'boolean',
-        booleanResult: this.endpointFetcher.fetchAsk(endpoint, <string> query),
-      };
+      case 'SELECT':
+        if (!variables) {
+          variables = Util.inScopeVariables(action.operation);
+        }
+        return this.executeQuery(endpoint, <string> query, false, variables);
+      case 'CONSTRUCT':
+        return this.executeQuery(endpoint, <string> query, true);
+      case 'ASK':
+        return <IActorQueryOperationOutputBoolean>{
+          type: 'boolean',
+          booleanResult: this.endpointFetcher.fetchAsk(endpoint, <string> query),
+        };
     }
   }
 
@@ -123,26 +125,27 @@ export class ActorQueryOperationSparqlEndpoint extends ActorQueryOperation {
         stream.on('error', reject);
         stream.on('end', () => reject(new Error('No metadata was found')));
         stream.on('metadata', resolve);
-      }));
+      }),
+    );
 
-    if (quads)
+    if (quads) {
       return <IActorQueryOperationOutputQuads> {
         type: 'quads',
         quadStream: stream,
         metadata,
       };
+    }
     return <IActorQueryOperationOutputBindings> {
       type: 'bindings',
       bindingsStream: stream,
       metadata,
-      variables: (<RDF.Variable[]> variables).map(termToString),
+      variables: (<RDF.Variable[]> variables).map(x => termToString(x)),
     };
   }
-
 }
 
 export interface IActorQueryOperationSparqlEndpointArgs
   extends IActorArgs<IActionQueryOperation, IActorTest, IActorQueryOperationOutput> {
   mediatorHttp: Mediator<Actor<IActionHttp, IActorTest, IActorHttpOutput>,
-    IActionHttp, IActorTest, IActorHttpOutput>;
+  IActionHttp, IActorTest, IActorHttpOutput>;
 }

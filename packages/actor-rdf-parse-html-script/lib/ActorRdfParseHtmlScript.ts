@@ -4,11 +4,11 @@ import {
   IActorOutputHandleRdfParse,
   IActorOutputMediaTypesRdfParse,
   IActorTestHandleRdfParse,
-  IActorTestMediaTypesRdfParse
-} from "@comunica/bus-rdf-parse";
-import {ActorRdfParseHtml, IActionRdfParseHtml, IActorRdfParseHtmlOutput} from "@comunica/bus-rdf-parse-html";
-import {Actor, IActorArgs, IActorTest, Mediator} from "@comunica/core";
-import {HtmlScriptListener} from "./HtmlScriptListener";
+  IActorTestMediaTypesRdfParse,
+} from '@comunica/bus-rdf-parse';
+import { ActorRdfParseHtml, IActionRdfParseHtml, IActorRdfParseHtmlOutput } from '@comunica/bus-rdf-parse-html';
+import { Actor, IActorArgs, IActorTest, Mediator } from '@comunica/core';
+import { HtmlScriptListener } from './HtmlScriptListener';
 
 /**
  * A HTML script RDF Parse actor that listens on the 'rdf-parse' bus.
@@ -17,13 +17,13 @@ import {HtmlScriptListener} from "./HtmlScriptListener";
  * and announce the presence of them by media type.
  */
 export class ActorRdfParseHtmlScript extends ActorRdfParseHtml {
-
   private readonly mediatorRdfParseMediatypes: Mediator<
-    Actor<IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>,
-    IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>;
+  Actor<IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>,
+  IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>;
+
   private readonly mediatorRdfParseHandle: Mediator<
-    Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
-    IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>;
+  Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
+  IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>;
 
   constructor(args: IActorRdfParseHtmlScriptArgs) {
     super(args);
@@ -36,8 +36,7 @@ export class ActorRdfParseHtmlScript extends ActorRdfParseHtml {
   public async run(action: IActionRdfParseHtml): Promise<IActorRdfParseHtmlOutput> {
     const supportedTypes: {[id: string]: number} = (await this.mediatorRdfParseMediatypes
       .mediate({ context: action.context, mediaTypes: true })).mediaTypes;
-    const htmlParseListener = new HtmlScriptListener(this.mediatorRdfParseHandle, action.emit, action.error, action.end,
-      supportedTypes, action.context, action.baseIRI, action.headers);
+    const htmlParseListener = new HtmlScriptListener(this.mediatorRdfParseHandle, action.emit, action.error, action.end, supportedTypes, action.context, action.baseIRI, action.headers);
     return { htmlParseListener };
   }
 }
@@ -45,9 +44,9 @@ export class ActorRdfParseHtmlScript extends ActorRdfParseHtml {
 export interface IActorRdfParseHtmlScriptArgs
   extends IActorArgs<IActionRdfParseHtml, IActorTest, IActorRdfParseHtmlOutput> {
   mediatorRdfParseMediatypes: Mediator<
-    Actor<IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>,
-    IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>;
+  Actor<IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>,
+  IActionMediaTypesRdfParse, IActorTestMediaTypesRdfParse, IActorOutputMediaTypesRdfParse>;
   mediatorRdfParseHandle: Mediator<
-    Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
-    IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>;
+  Actor<IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>,
+  IActionHandleRdfParse, IActorTestHandleRdfParse, IActorOutputHandleRdfParse>;
 }

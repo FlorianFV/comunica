@@ -11,7 +11,6 @@ import {StreamWriter} from "n3";
  * A comunica N3 RDF Serialize Actor.
  */
 export class ActorRdfSerializeN3 extends ActorRdfSerializeFixedMediaTypes {
-
   constructor(args: IActorRdfSerializeFixedMediaTypesArgs) {
     super(args);
   }
@@ -20,9 +19,8 @@ export class ActorRdfSerializeN3 extends ActorRdfSerializeFixedMediaTypes {
     : Promise<IActorRdfSerializeOutput> {
     const data: NodeJS.ReadableStream = <any> new StreamWriter({ format: mediaType }).import(action.quadStream);
     return { data,
-      triples: mediaType === 'text/turtle'
-      || mediaType === 'application/n-triples'
-      || mediaType === 'text/n3' };
+      triples: mediaType === 'text/turtle' ||
+      mediaType === 'application/n-triples' ||
+      mediaType === 'text/n3' };
   }
-
 }

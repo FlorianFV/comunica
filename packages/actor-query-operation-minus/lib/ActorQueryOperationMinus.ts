@@ -13,7 +13,6 @@ import {BindingsIndex} from "./BindingsIndex";
  * A comunica Minus Query Operation Actor.
  */
 export class ActorQueryOperationMinus extends ActorQueryOperationTypedMediated<Algebra.Minus> {
-
   constructor(args: IActorQueryOperationTypedMediatedArgs) {
     super(args, 'minus');
   }
@@ -22,15 +21,16 @@ export class ActorQueryOperationMinus extends ActorQueryOperationTypedMediated<A
     return true;
   }
 
-  public async runOperation(pattern: Algebra.Minus, context: ActionContext)
-        : Promise<IActorQueryOperationOutputBindings> {
+  public async runOperation(pattern: Algebra.Minus, context: ActionContext): Promise<IActorQueryOperationOutputBindings> {
     const buffer = ActorQueryOperation.getSafeBindings(
-            await this.mediatorQueryOperation.mediate({ operation: pattern.right, context }));
+      await this.mediatorQueryOperation.mediate({ operation: pattern.right, context }),
+    );
     const output = ActorQueryOperation.getSafeBindings(
-      await this.mediatorQueryOperation.mediate({ operation: pattern.left, context }));
+      await this.mediatorQueryOperation.mediate({ operation: pattern.left, context }),
+    );
 
     const commons: string[] = this.getCommonVariables(buffer.variables, output.variables);
-    if (commons.length !== 0) {
+    if (commons.length > 0) {
       /**
        * To assure we've filtered all B (`buffer`) values from A (`output`) we wait until we've fetched all values of B.
        * Then we save these triples in `index` and use it to filter our A-stream.
@@ -47,6 +47,7 @@ export class ActorQueryOperationMinus extends ActorQueryOperationTypedMediated<A
     } else {
       return output;
     }
+    return output;
   }
 
   /**
@@ -54,8 +55,10 @@ export class ActorQueryOperationMinus extends ActorQueryOperationTypedMediated<A
    */
   private getCommonVariables(array1: string[], array2: string[]): string[] {
     return Object.keys(array1.filter(
-      (n: string) => -1 !== array2.indexOf(n))
-      .reduce((m: {[variableName: string]: boolean}, key: string) => {m[key] = true; return m; }, {}));
+      (n: string) => array2.includes(n),
+    )
+      .reduce((m: {[variableName: string]: boolean}, key: string) => {
+        m[key] = true; return m;
+      }, {}));
   }
-
 }
